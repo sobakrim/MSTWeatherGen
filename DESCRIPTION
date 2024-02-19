@@ -2,8 +2,14 @@ Package: MSTWeatherGen
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
+    c(
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+    person(given = "Jean-François",
+           family = "Rey",
+           role = c("aut","cre"),
+           email = "jean-francois.rey@inrae.fr",
+           comment = c(ORCID = "0000-0003-3281-6701")))
 Description: What the package does (one paragraph).
 License: `use_gpl3_license()`
     license
