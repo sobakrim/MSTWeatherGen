@@ -1,0 +1,19 @@
+repo:
+  url:
+  home: https://github.com/sobakrim/MSTWeatherGen
+authors:
+  Saïd Obakrim:
+    href: "http://sobakrim.github.io/"
+  Jean-François Rey:
+    href: "https://jeff.biosp.org"
+navbar:
+  structure:
+    left:  [home, intro, reference, articles, tutorials, news]
+    right: [github]
+  components:
+    github:
+      icon: fab fa-gitlab fa-lg
+      href: https://github.com/sobakrim/MSTWeatherGen
+    intro:
+      text: Get Started
+      href: articles/get-started.html
