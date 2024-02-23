@@ -3,8 +3,6 @@ run-name: R Package check 🚀
 on:
   push:
     branches: [main]
-  push_request:
-    branches: [main]
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
