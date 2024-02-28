@@ -12,7 +12,7 @@ navbar:
     right: [github]
   components:
     github:
-      icon: fab fa-gitlab fa-lg
+      icon: fa-github
       href: https://github.com/sobakrim/MSTWeatherGen
     intro:
       text: Get Started
