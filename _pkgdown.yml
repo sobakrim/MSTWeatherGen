@@ -1,6 +1,9 @@
 repo:
-  url:
+  url: https://github.com/sobakrim/MSTWeatherGen
   home: https://github.com/sobakrim/MSTWeatherGen
+template:
+  bootstrap: 5
+  bootswatch: cosmo
 authors:
   Saïd Obakrim:
     href: "http://sobakrim.github.io/"
@@ -12,8 +15,5 @@ navbar:
     right: [github]
   components:
     github:
-      icon: fa-github
+      icon: fa-brands fa-github
       href: https://github.com/sobakrim/MSTWeatherGen
-    intro:
-      text: Get Started
-      href: articles/run-simple-simulation.html

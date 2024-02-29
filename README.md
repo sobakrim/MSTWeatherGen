@@ -1,4 +1,4 @@
-# MSTWeather
+# MSTWeatherGen
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/sobakrim/MSTWeatherGen/actions/workflows/r-package-check.yml/badge.svg)](https://github.com/sobakrim/MSTWeatherGen/actions/workflows/r-package-check.yml)
@@ -9,12 +9,10 @@
 
 {MSTWeatherGen} is a package ....
 
-[[_TOC_]]
-
 
 ## Installation
 
-```{r eval=FALSE}
+```r
 # Install from CRAN
 install.packages("MSTWeatherGEN")
 
@@ -36,5 +34,5 @@ See [LICENSE](LICENSE) file.
 
 ## Authors
 
-Saïd Obakrim
-Jean-François Rey @MechantRouquin
+Saïd Obakrim  
+Jean-François Rey  
