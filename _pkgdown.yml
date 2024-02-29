@@ -1,6 +1,4 @@
-repo:
-  url: https://github.com/sobakrim/MSTWeatherGen
-  home: https://github.com/sobakrim/MSTWeatherGen
+url: https://github.com/sobakrim/MSTWeatherGen
 template:
   bootstrap: 5
   bootswatch: cosmo

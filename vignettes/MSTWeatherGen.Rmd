@@ -1,9 +1,10 @@
 ---
-title: "1 - Running a simple simulation"
-data: "`r Sys.Date()`"
+title: "Running a simple simulation"
+description: "Get Started with MSTWeatherGen"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-    %\VignetteIndexEntry{1 - Running a simple simulation}
+    %\VignetteIndexEntry{Running a simple simulation}
     %\VignetteEncoding{UTF-8}
     %\VignetteEngine{knitr::rmarkdown}
 editor_options:

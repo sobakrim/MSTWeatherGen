@@ -1,4 +1,4 @@
-# MSTWeatherGen
+# MSTWeatherGen <img src="man/figures/MSTWeatherGen.png" align="right" alt="" width="120" />
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/sobakrim/MSTWeatherGen/actions/workflows/r-package-check.yml/badge.svg)](https://github.com/sobakrim/MSTWeatherGen/actions/workflows/r-package-check.yml)

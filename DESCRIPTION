@@ -1,5 +1,5 @@
 Package: MSTWeatherGen
-Title: Multi Spatial Temporal Weather Generator
+Title: Multivariate Spatial Temporal Weather Generator
 Version: 0.1.0.9000
 Authors@R: 
     c(
