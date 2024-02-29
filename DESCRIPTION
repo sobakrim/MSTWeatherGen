@@ -1,19 +1,22 @@
 Package: MSTWeatherGen
-Title: Multivariate Spatial Temporal Weather Generator
+Title: Multivariate Space-Time Weather Generator
 Version: 0.1.0.9000
 Authors@R: 
     c(
     person(given = "Saïd",
            family = "Obakrim",
            role = c("aut", "cre"),
-           email = "said.obakrim@inrae.fr",
-           comment = c(ORCID = "YOUR-ORCID-ID")),
+           email = "saidobak@gmail.com",
+           comment = c(ORCID = "0000-0003-3127-7777")),
     person(given = "Jean-François",
            family = "Rey",
            role = "aut",
            email = "jean-francois.rey@inrae.fr",
            comment = c(ORCID = "0000-0003-3281-6701")))
-Description: What the package does (one paragraph).
+Description: Simulation model of multivariate spatio-temporal meteorological variables.
+             It provides tools for estimating the model parameters and generating
+             synthetic weather data that can be used for a variety of applications,
+             including climate research, agricultural or hydrological modeling.
 License: GPL (>=3) | file LICENSE
 URL: https://github.com/sobakrim/MSTWeatherGen,
      http://sobakrim.github.io/MSTWeatherGen
