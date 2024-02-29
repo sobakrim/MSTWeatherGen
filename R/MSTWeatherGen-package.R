@@ -13,14 +13,17 @@
 
 
 #' @encoding UTF-8
-#' @title Multi Spatial Temporal Weather Generator
-#' @description A M S T Wheather generator.
+#' @title Multivariate Space-Time Weather Generator
+#' @description Simulation model of multivariate spatio-temporal meteorological variables.
+#' It provides tools for estimating the model parameters and generating
+#` synthetic weather data that can be used for a variety of applications,
+#` including climate research, agricultural or hydrological modeling.
 #' @aliases MSTWeatherGen-package MSTWeatherGen
 #'
-#' @author Saïd Obakrim \email{}
+#' @author Saïd Obakrim \email{saidobak@@gmail.com}
 #' @author Jean-François Rey \email{jean-francois@@inrae.fr}
 #'
-#' Maintainer: Saïd Obakrim \email{}
+#' Maintainer: Saïd Obakrim \email{saidobak@@gmail.com}
 #' @docType package
 #' @name MSTWeatherGen-package
 #' @details \tabular{ll}{

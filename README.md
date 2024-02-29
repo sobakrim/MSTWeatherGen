@@ -7,7 +7,7 @@
 
 ## Overview
 
-{MSTWeatherGen} is a package ....
+{MSTWeatherGen} Multivariate Space-Time Weather Generator package is designed for the simulation of multivariate spatio-temporal meteorological variables. It provides tools for estimating the model parameters and generating synthetic weather data that can be used for a variety of applications, including climate research, agricultural or hydrological modeling.  
 
 
 ## Installation

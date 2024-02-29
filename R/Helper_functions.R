@@ -235,9 +235,11 @@ weather_types = function(data, variables,dates, n_wt = NULL,lonlat,
 #'         representing the probability distribution of transitioning to each possible weather type
 #'         from a given starting type.
 #' @examples
+#' \dontrun{
 #' # Assuming `wt_vector` is your vector of weather types and `date_vector` corresponds to dates
 #' # for each weather type, and you have identified 5 unique weather types:
 #' transition_matrix = estimtransition(wt_vector, date_vector, 5)
+#' }
 #' @export
 
 estimtransition = function(wt, dates, K){
