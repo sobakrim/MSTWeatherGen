@@ -1,6 +1,6 @@
 url: https://github.com/sobakrim/MSTWeatherGen
 template:
-  bootstrap: 5
+  bootstrap: 3
   bootswatch: cosmo
 authors:
   Saïd Obakrim:

@@ -22,13 +22,13 @@
 #'         after filtering and variance contribution analysis. If PCA is used, returns the
 #'         combined and scaled PCA results from each slice of the data.
 #' @examples
+#' \dontrun{
 #' # Assuming `my_data` is your dataset
 #' compressed_data_pca = data_compression(my_data, method = "pca")
 #' compressed_data_pta3 = data_compression(my_data, method = "pta3")
+#' }
+#' @importFrom PTAk PTA3
 #' @export
-
-
-
 data_compression = function(data, method = c("pca", "pta3")) {
   # Data compression function
   # Arguments:
@@ -38,9 +38,9 @@ data_compression = function(data, method = c("pca", "pta3")) {
   #   The compressed data
 
   if (method == "pta3") {
-    require(PTAk)
+    #require(PTAk)
     # Perform the PTA3 method on the data
-    pta = PTA3(data, nbPT = 3, nbPT2 = 1)
+    pta = PTAK::PTA3(data, nbPT = 3, nbPT2 = 1)
 
     # Filter components based on the presence of a "*" at the beginning of their names
     out = !substr(pta[[3]]$vsnam, 1, 1) == "*"
@@ -90,6 +90,12 @@ data_compression = function(data, method = c("pca", "pta3")) {
 #' @param return_plots Logical indicating whether to return plots.
 #' @param names_units Units of the variables for labeling plots.
 #' @param dir Directory where to save the generated plots. This parameter is mandatory if return_plots is TRUE.
+#' @import lubridate
+#' @import PTAk
+#' @import abind
+#' @importFrom mclust Mclust
+#' @import ggplot2
+#' @import viridis
 #' @return Depending on the value of return_plots, returns a list containing the classification of each time
 #'         point into weather types and, optionally, plots illustrating the weather types.
 #' @export
@@ -116,12 +122,12 @@ weather_types = function(data, variables,dates, n_wt = NULL,lonlat,
   #   and optionally, plots illustrating the weather types
 
   # Load required packages
-  require(lubridate)
-  require(PTAk)
-  require(abind)
-  require(mclust)
-  require(ggplot2)
-  require(viridis)
+  # require(lubridate)
+  # require(PTAk)
+  # require(abind)
+  # require(mclust)
+  # require(ggplot2)
+  # require(viridis)
 
   # Check for necessary input for plot saving
   if(return_plots & missing(dir)) stop("provide dir to save plots")
@@ -142,7 +148,7 @@ weather_types = function(data, variables,dates, n_wt = NULL,lonlat,
   pca = data_compression(data, method = data_compression_method)
 
   # Perform clustering to classify days into weather types
-  m = Mclust(pca, G = n_w, modelNames = "VVV")
+  m = mclust::Mclust(pca, G = n_w, modelNames = "VVV")
   cluster = m$classification
   K = length(unique(cluster))
 
@@ -455,6 +461,14 @@ orderNorm_all <- function(data, j, lonlat, left) {
     return(orderNorm(x[!x==0],left = left))
   }
 }
+
+#' predict order norm Transf
+#' @param object description
+#' @param newdata description
+#' @param inverse description
+#' @param warn desc
+#' @param ... more arguments
+#' 
 predict.orderNormTransf <- function(object,
                                     newdata = NULL,
                                     inverse = FALSE,
