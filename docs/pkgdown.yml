@@ -2,6 +2,9 @@ pandoc: 3.1.11
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
-  run_simple_simulation: run_simple_simulation.html
-last_built: 2024-02-28T16:09Z
+  MSTWeatherGen: MSTWeatherGen.html
+last_built: 2024-02-29T10:39Z
+urls:
+  reference: https://github.com/sobakrim/MSTWeatherGen/reference
+  article: https://github.com/sobakrim/MSTWeatherGen/articles
 

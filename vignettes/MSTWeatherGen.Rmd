@@ -1,0 +1,24 @@
+---
+title: "Running a simple simulation"
+description: "Get Started with MSTWeatherGen"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+    %\VignetteIndexEntry{Running a simple simulation}
+    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
+editor_options:
+    chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+
+```{r}
+library(MSTWeatherGen)
+```
