@@ -20,10 +20,10 @@
 #` including climate research, agricultural or hydrological modeling.
 #' @aliases MSTWeatherGen-package MSTWeatherGen
 #'
-#' @author Saïd Obakrim \email{saidobak@@gmail.com}
+#' @author Said Obakrim \email{saidobak@@gmail.com}
 #' @author Jean-François Rey \email{jean-francois@@inrae.fr}
 #'
-#' Maintainer: Saïd Obakrim \email{saidobak@@gmail.com}
+#' Maintainer: Said Obakrim \email{saidobak@@gmail.com}
 #' @docType package
 #' @name MSTWeatherGen-package
 #' @details \tabular{ll}{

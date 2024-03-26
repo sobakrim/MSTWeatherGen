@@ -22,3 +22,38 @@ knitr::opts_chunk$set(
 ```{r}
 library(MSTWeatherGen)
 ```
+
+```{r}
+names = c("Wind","Temp_max","Precipitation")
+
+data = readRDS("data.rds")
+coordinates = readRDS("coordinates.rds")
+names_weather_types = c("Wind", "Temp_max")
+seasons <- list(
+  s1 = list(min_day = 1, max_day = 29, min_month = 12, max_month = 2),
+  s2 = list(min_day = 1, max_day = 31, min_month = 3, max_month = 5),
+  s3 = list(min_day = 1, max_day = 31, min_month = 6, max_month = 8),
+  s4 = list(min_day = 1, max_day = 30, min_month = 9, max_month = 11)
+)
+names_seasons = c("DJF", "MAM", "JJA", "SON")
+
+```
+
+
+```{r}
+
+swg = MSTSWG_estimation(data = data, seasons = seasons,dates = dates, names = names, by_season = T,
+                                 names_weather_types = names_weather_types,coordinates= coordinates, 
+                                 max_it=500, tmax=3, n1=15, n2=15)
+```
+
+```{r}
+AR_lag = 2
+bk = calculate_AR_coefficients_matrices(parm = swg, coordinates = coordinates, AR_lag = AR_lag)
+
+sim = MSTSWG_simulation(dates_sim = dates, dates_original = dates, 
+                                data = data, seasons = seasons, names = names, 
+                                names_weather_types = names_weather_types, parm = swg,
+                                AR_lag = AR_lag, bk = bk)
+```
+
