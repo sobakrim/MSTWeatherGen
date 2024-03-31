@@ -26,8 +26,11 @@ library(MSTWeatherGen)
 ```{r}
 names = c("Wind","Temp_max","Precipitation")
 
-data = readRDS("data.rds")
-coordinates = readRDS("coordinates.rds")
+data(real_data, package = "MSTWeatherGen")
+data(coordinates, package = "MSTWeatherGen")
+#load("/home/sobakrim/Bureau/MSTWeatherGen/MSTWeatherGen/data/data.rda")
+#load("/home/sobakrim/Bureau/MSTWeatherGen/MSTWeatherGen/data/coordinates.rda")
+dates = seq(as.Date("2017-01-01"),as.Date("2021-12-31"), by="day")
 names_weather_types = c("Wind", "Temp_max")
 seasons <- list(
   s1 = list(min_day = 1, max_day = 29, min_month = 12, max_month = 2),
@@ -41,10 +44,15 @@ names_seasons = c("DJF", "MAM", "JJA", "SON")
 
 
 ```{r}
+real_data = data_compression(real_data)
+```
+
+
+```{r}
 
 swg = MSTSWG_estimation(data = data, seasons = seasons,dates = dates, names = names, by_season = T,
                                  names_weather_types = names_weather_types,coordinates= coordinates, 
-                                 max_it=500, tmax=3, n1=15, n2=15)
+                                 max_it=100, tmax=2, n1=10, n2=10)
 ```
 
 ```{r}
