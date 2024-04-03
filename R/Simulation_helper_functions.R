@@ -1,3 +1,4 @@
+#' @importFrom Matrix chol2inv 
 calculate_Bk_matrices <- function(C_k_matrices) {
   # Function for calculating coefficients matrices (Bk) for an autoregressive (AR) model
   # using lagged covariance matrices (C_k_matrices).
@@ -50,27 +51,37 @@ calculate_Bk_matrices <- function(C_k_matrices) {
   
   return(Bk_matrices_list)
 }
-calculate_AR_coefficients_matrices = function(parm, coordinates, AR_lag){
+#' Calculate AR Coefficient Matrices
+#'
+#' Computes autoregressive (AR) coefficient matrices for each season and weather state based on the parameters of a fitted spatial weather model and the spatial coordinates of observation locations. This function is part of the process for preparing data for spatial weather simulations, allowing the AR process to consider spatial correlations.
+#'
+#' @param parm A list containing the fitted parameters of the spatial weather model. This list should include elements for each season, and within each season, parameters (`gf_par`) for each weather state.
+#' @param coordinates A matrix or data frame of geographic coordinates for the locations represented in the model. The coordinates are used to calculate spatial covariance matrices.
+#' @param AR_lag The lag order of the autoregressive model to be used in calculating the coefficient matrices. Specifies how many past time points should be considered in the AR process.
+#'
+#' @return A list of AR coefficient matrices (`bk`) for each season and weather state, along with the base covariance matrix (`cov0`) used in their calculation. The structure of the return list mirrors that of the `parm` input, with a set of coefficient matrices for each season and weather state.
+#'
+#' @examples
+#' \dontrun{
+#'   # Assuming `fitted_parms` contains the fitted model parameters and
+#'   # `site_coordinates` contains the geographic coordinates for your locations:
+#'   AR_coeffs = calculate_AR_coefficients_matrices(parm = fitted_parms,
+#'                                                  coordinates = site_coordinates,
+#'                                                  AR_lag = 1)
+#' }
+#'
+#' @export
+calculate_AR_coefficients_matrices <- function(parm, coordinates, AR_lag){
+  names = parm$names
   bk = lapply(1:length(parm$swg), function(s){
     K = length(parm$swg[[s]]$gf_par)
     bk = lapply(1:K, function(k){
-      cov = cov_matrices(par = parm$swg[[s]]$gf_par[[k]], coordinates = coordinates, 
+      cova = cov_matrices(par = parm$swg[[s]]$gf_par[[k]], coordinates = coordinates, 
                          names = names, M = AR_lag)
-      bk = calculate_Bk_matrices(cov)
-      return(list(bk = bk, cov0 = cov[[1]]))
+      bk = calculate_Bk_matrices(cova)
+      return(list(bk = bk, cov0 = cova[[1]]))
     })
     return(bk)
-  })
-  return(bk)
-}
-calculate_AR_coefficients_matrices = function(parm, coordinates, AR_lag){
-  
-  K = length(parm$swg$gf_par)
-  bk = lapply(1:K, function(k){
-    cov = cov_matrices(par = parm$swg$gf_par[[k]], coordinates = coordinates, 
-                       names = names, M = AR_lag)
-    bk = calculate_Bk_matrices(cov)
-    return(list(bk = bk, cov0 = cov[[1]]))
   })
   return(bk)
 }
@@ -96,7 +107,6 @@ simulate_Z <- function(Bk, M, num_steps, Z_initial,wt) {
   
   return(Z_list)
 }
-
 generate_initial_conditions <- function(AR_lag, bk, wt) {
   # Generate initial conditions for the AR process based on Bk matrices and initial weather type.
   #
@@ -140,7 +150,6 @@ list_to_array <- function(Y, names, dates) {
   
   return(sim_array)
 }
-
 most_probable_weather_type = function(sim, centroids, transitions, names_weather_types) {
   # Function to predict the most likely weather type for the next time step in a simulated weather series.
   #

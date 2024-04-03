@@ -1,5 +1,5 @@
-############# Transformation function ############# 
-
+#' @importFrom crch qcnorm
+#' @importFrom stats glm
 orderNorm <- function(x,left, n_logit_fit = min(length(x), 100000), ..., warn = TRUE) {
   # Function for ordered normalization Ordered Quantile normalizing transformation
   # Function inspired from "bestNormalize" package and adapted for truncated normal distributions.
@@ -41,7 +41,7 @@ orderNorm <- function(x,left, n_logit_fit = min(length(x), 100000), ..., warn = 
   
   # fit model for future extrapolation
   fit <- suppressWarnings(
-    glm(q_red ~ x_red , family = 'binomial', 
+    stats::glm(q_red ~ x_red , family = 'binomial', 
         weights = rep(n_red, n_red))
   )
   fit <- list(coef = fit$coefficients, x_red = x_red)
@@ -76,8 +76,6 @@ orderNorm_all <- function(data, j, coordinates, left) {
   #   The result of applying the orderNorm function to the selected variable 'j', considering spatial proximity 
   #   and handling variables with a high proportion of zero values.
   
-  require(FNN) # Load the FNN package for k-nearest neighbors calculations.
-  
   D = as.matrix(dist(coordinates))
   kn = order(D[j,])
   j = kn[1]
@@ -93,6 +91,7 @@ orderNorm_all <- function(data, j, coordinates, left) {
     return(orderNorm(x[!x==0],left = left))
   }
 }
+#' @exportS3method
 predict.orderNormTransf <- function(object,
                                     newdata = NULL,
                                     inverse = FALSE, 
@@ -118,6 +117,8 @@ predict.orderNormTransf <- function(object,
   
   return(newdata)
 }
+#' @importFrom crch qcnorm
+#' @importFrom stats approx
 inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FALSE) {
   # Reverses the normalization or transformation applied by the orderNorm function.
   # Arguments:
@@ -133,16 +134,16 @@ inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FAL
   
   if(min(old_points)>0){
     vals <- suppressWarnings(
-      approx(x_t, old_points, xout = new_points_x_t, rule = 2:1)
+      stats::approx(x_t, old_points, xout = new_points_x_t, rule = 2:1)
     )
   }else{
     vals <- suppressWarnings(
-      approx(x_t, old_points, xout = new_points_x_t, rule = 1)
+      stats::approx(x_t, old_points, xout = new_points_x_t, rule = 1)
     )
   }
   # If predictions have been made outside observed domain
   if (any(is.na(vals$y))) {
-    if(warn) warning('Transformations requested outside observed domain; logit approx. on ranks applied')
+    if(warn) warning('Transformations requested outside observed domain; logit stats::approx. on ranks applied')
     
     fit <- orderNorm_obj$fit
     p <- crch::qcnorm(predict_binomial(fit), left = left)
@@ -172,6 +173,8 @@ inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FAL
   
   return(vals$y)
 }
+#' @importFrom crch qcnorm
+#' @importFrom stats approx
 orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
   # Transforms new data points based on a previously fitted normalization or transformation model.
   # This function is used to apply the same transformation to new data that was applied to the original data.
@@ -186,7 +189,7 @@ orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
   x_t <- orderNorm_obj$x.t
   old_points <- orderNorm_obj$x
   vals <- suppressWarnings(
-    approx(old_points, x_t, xout = new_points, rule = 1)
+    stats::approx(old_points, x_t, xout = new_points, rule = 1)
   )
   
   # If predictions have been made outside observed domain

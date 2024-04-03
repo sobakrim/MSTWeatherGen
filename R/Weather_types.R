@@ -1,3 +1,4 @@
+#' @importFrom PTAk PTA3
 data_compression = function(data) {
   # Data compression function
   # Arguments:
@@ -5,9 +6,8 @@ data_compression = function(data) {
   # Returns:
   #   The compressed data 
   
-  require(PTAk)
   # Perform the PTA3 method on the data
-  pta = PTA3(data, nbPT = 3, nbPT2 = 1)
+  pta = PTAk::PTA3(data, nbPT = 3, nbPT2 = 1, verbose = F)
   
   # Filter components based on the presence of a "*" at the beginning of their names
   out = !substr(pta[[3]]$vsnam, 1, 1) == "*"
@@ -26,8 +26,9 @@ data_compression = function(data) {
   
   return(pca)
 }
-
-
+#' @import viridis
+#' @importFrom mclust Mclust
+#' @import ggplot2
 weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
                          max_number_wt = NULL,threshold = 0, return_plots = T, 
                          names_units, dir){
@@ -46,14 +47,6 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
   # Returns:
   #   A list containing the classification of each time point into weather types,
   #   and optionally, plots illustrating the weather types 
-  
-  # Load required packages
-  require(lubridate)
-  require(PTAk)
-  require(abind)
-  require(mclust)
-  require(ggplot2)
-  require(viridis)
   
   # Check for necessary input for plot saving
   if(return_plots & missing(dir)) stop("provide dir to save plots")
@@ -74,7 +67,7 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
   pca = data_compression(data)
   
   # Perform clustering to classify days into weather types
-  m = Mclust(pca, G = n_w, modelNames = "VVV")
+  m = mclust::Mclust(pca, G = n_w, modelNames = "VVV", verbose = F)
   cluster = m$classification
   K = length(unique(cluster))
   
@@ -145,7 +138,7 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
     return(list(cluster=cluster, model = m))
   }
 }
-
+#' @importFrom lubridate year
 estimtransition = function(wt, dates, K){
   # Function to estimate transition matrices based on weather types 
   # Arguments:
@@ -159,7 +152,7 @@ estimtransition = function(wt, dates, K){
   # Initialize variables
   nwt = length(unique(wt)) # Number of unique weather types
   n = length(wt) # Total number of observations
-  years = year(dates) # Extract years from dates
+  years = lubridate::year(dates) # Extract years from dates
   y = unique(years) # Unique years
   M = matrix(0, K, K) # Initialize transition matrix with zeros
   
@@ -178,6 +171,8 @@ estimtransition = function(wt, dates, K){
   
   return(M)
 }
+#' @importFrom FNN get.knn
+#' @importFrom lubridate year
 
 estimate_transitions = function(cluster, dates, nb = 30, K){
   # Function to estimate transition matrices between clusters over time
@@ -190,15 +185,12 @@ estimate_transitions = function(cluster, dates, nb = 30, K){
   #   A list of transition matrices, each corresponding to a time point. These matrices contain 
   #   the estimated probabilities of transitioning from one cluster to another based on the nearest neighbors' approach.
   
-  # Load required packages
-  require(FNN)
-  require(lubridate)
   
   # Adjust the number of neighbors 
-  nb = nb * length(unique(year(dates)))
+  nb = nb * length(unique(lubridate::year(dates)))
   
   # Find the nearest neighbors for each date based on the day and month
-  neighbors = get.knn(as.numeric(factor(substr(dates, 6, 11))), nb)$nn.index
+  neighbors = FNN::get.knn(as.numeric(factor(substr(dates, 6, 11))), nb)$nn.index
   
   # Estimate transition matrices for each point in time
   tm = lapply(1:length(cluster), function(i){
@@ -272,3 +264,4 @@ simulate_weathertypes = function(first_state, dates_sim, dates, tm, K) {
   # Return the vector of simulated states
   return(states)
 }
+ 

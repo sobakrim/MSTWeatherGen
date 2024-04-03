@@ -1,10 +1,11 @@
+#' @importFrom lubridate year leap_year
 season_indices = function(dates, season, Year){
   
-  years = unique(year(dates))
+  years = unique(lubridate::year(dates))
   years = c(years, max(years) + 1)
   md = lapply(years, function(Year) {
     if(Year == years[1]){
-      is_leap = leap_year(Year)
+      is_leap = lubridate::leap_year(Year)
       
       # Adjust min_day for non-leap years if necessary
       adjusted_min_day = ifelse(!is_leap && season$min_month == 2 && season$min_day == 29, 28, season$min_day)
@@ -12,7 +13,7 @@ season_indices = function(dates, season, Year){
       
       # Check if the season spans the end of the year
       if (season$min_month > season$max_month || (season$min_month == season$max_month && adjusted_min_day > adjusted_max_day)) {
-        d1 = as.Date(paste(Year, min(month(dates[year(dates) %in% years[1]])), adjusted_min_day, sep = "-"))
+        d1 = as.Date(paste(Year, min(month(dates[lubridate::year(dates) %in% years[1]])), adjusted_min_day, sep = "-"))
         d2 = as.Date(paste(Year, season$max_month, adjusted_max_day, sep = "-"))
       }else{
         d1 = as.Date(paste(Year, season$min_month, adjusted_min_day, sep = "-"))
@@ -23,7 +24,7 @@ season_indices = function(dates, season, Year){
     }else{
       if(Year == max(years)){
         Year = Year - 1
-        is_leap = leap_year(Year)
+        is_leap = lubridate::leap_year(Year)
         
         # Adjust min_day for non-leap years if necessary
         adjusted_min_day = ifelse(!is_leap && season$min_month == 2 && season$min_day == 29, 28, season$min_day)
@@ -47,7 +48,7 @@ season_indices = function(dates, season, Year){
       }else{
         
         # Check for leap year
-        is_leap = leap_year(Year)
+        is_leap = lubridate::leap_year(Year)
         
         # Adjust min_day for non-leap years if necessary
         adjusted_min_day = ifelse(!is_leap && season$min_month == 2 && season$min_day == 29, 28, season$min_day)
@@ -55,14 +56,14 @@ season_indices = function(dates, season, Year){
         
         # Adjust max_day for non-leap years if necessary
         if (season$min_month > season$max_month){
-          is_leap = leap_year(Year)
+          is_leap = lubridate::leap_year(Year)
           adjusted_max_day = ifelse(!is_leap && season$max_month == 2 && season$max_day == 29, 28, season$max_day)
-          is_leap = leap_year(Year-1)
+          is_leap = lubridate::leap_year(Year-1)
           adjusted_min_day = ifelse(!is_leap && season$min_month == 2 && season$min_day == 29, 28, season$min_day)
           d2 = as.Date(paste(Year, season$max_month, adjusted_max_day, sep = "-"))
           d1 = as.Date(paste(Year-1, season$min_month, adjusted_min_day, sep = "-"))
         }else{
-          is_leap = leap_year(Year)
+          is_leap = lubridate::leap_year(Year)
           adjusted_max_day = ifelse(!is_leap && season$max_month == 2 && season$max_day == 29, 28, season$max_day)
           d2 = as.Date(paste(Year, season$max_month, adjusted_max_day, sep = "-"))
         }
@@ -77,7 +78,7 @@ season_indices = function(dates, season, Year){
   if(missing(Year)){
     return(which(dates %in% md))
   }else{
-    return(which(dates %in% md & year(dates)==Year))
+    return(which(dates %in% md & lubridate::year(dates)==Year))
   }
 }
 filter_season_data <- function(data, dates, season, names) {
@@ -127,7 +128,7 @@ haversine <- function(point1, point2) {
   return(d)
 }
 
-
+#' @importFrom geosphere distHaversine
 ds = function(i,j,coordinates) {
   return(geosphere::distHaversine(coordinates[i,], coordinates[j,])/1000)
 }

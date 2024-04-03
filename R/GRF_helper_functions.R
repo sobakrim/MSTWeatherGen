@@ -8,7 +8,7 @@ generate_variable_index_pairs <- function(names) {
   
   return(ep)
 }
-initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax) {
+initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax, cr) {
   # Initialize the `par_all` vector if it is missing, with default values or using `par_s`
   if (is.null(par_all)) {
     names_par_all <- c(paste(pairs, "dij", sep = ":"), "a", "b", "c", "d", "e", paste(names, "ci", sep = ":"),
@@ -42,6 +42,7 @@ initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax) {
   } 
   return(par_all)
 }
+#' @importFrom Matrix nearPD
 update_ax_parameters <- function(par_all, names, ax) {
   # Update the `ax` parameters in `par_all` based on the covariance information in `ax`
   if(!is.matrix(ax)){
@@ -67,6 +68,7 @@ update_ax_parameters <- function(par_all, names, ax) {
   }
   return(par_all)
 }
+#' @importFrom parallel mclapply
 init_space_par <- function(data, names, h, uh, max_it = 2000) {
   # Initializes spatial parameters for each variable
   # by optimizing an initial log-likelihood function (loglik0)
@@ -87,7 +89,7 @@ init_space_par <- function(data, names, h, uh, max_it = 2000) {
   #   the set of parameters optimized for one of the variables specified in 'names'.
   
   # Perform parallel optimization for each variable using mclapply
-  par = mclapply(names, function(v) {
+  par = parallel::mclapply(names, function(v) {
     optim(
       par = c(1, 0.1),  # Initial parameter guesses
       fn = loglik_spatial,     # Objective function to minimize (negative log-likelihood)
@@ -101,13 +103,14 @@ init_space_par <- function(data, names, h, uh, max_it = 2000) {
   
   return(par)
 }
+#' @importFrom stringr str_split
 optimize_pairs_spatial <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   pairs <- paste(ep[,1],ep[,2], sep = "-")
   
   # Optimize model parameters for each pair of variables using the log-likelihood function
   for (i in seq(nrow(ep))) {
     pair <- pairs[i]
-    sp <- unlist(str_split(pair, "-"))
+    sp <- unlist(stringr::str_split(pair, "-"))
     if (sp[1] == sp[2]) {
       parms <- c(paste(pair, "rij", sep = ":"),paste(pair, "ax", sep = ":"),
                  paste(pair, "vij", sep = ":"))
@@ -115,25 +118,26 @@ optimize_pairs_spatial <- function(par_all, data, names, Vi, uh, cr, max_it, ep)
                               par_all = par_all,ep = ep,
                               names = names, 
                               Vi = Vi, uh = uh[uh[,1]==0,], cr = cr,
-                              control = list(maxit = max_it, trace = 2))$par
+                              control = list(maxit = max_it))$par
     } else {
       parms <- c(paste(pair, "ax", sep = ":"))
       par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data=data, pair = pair, parms = parms,
                               par_all = par_all,ep = ep,
                               names = names, 
                               Vi = Vi, uh = uh[uh[,1]==0,], cr = cr,
-                              control = list(maxit = max_it, trace = 2))$par   
+                              control = list(maxit = max_it))$par   
     }
     
   }
   return(par_all)
 }
+#' @importFrom stringr str_split
 optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   pairs <- paste(ep[,1],ep[,2], sep = "-")
   # Optimize model parameters for each pair of variables using the log-likelihood function
   for (i in seq(nrow(ep))) {
     pair <- pairs[i]
-    sp <- unlist(str_split(pair, "-"))
+    sp <- unlist(stringr::str_split(pair, "-"))
     if (sp[1] == sp[2]) {
       parms <- c(paste(sp[1], "ci", sep = ":"),paste(sp[2], "ci", sep = ":"),paste(pair, "ax", sep = ":"),
                 paste(pair, "bij", sep = ":"), paste(pair, "aij", sep = ":"),
@@ -141,7 +145,7 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
       par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data = data, pair = pair, parms = parms,
                               par_all = par_all, ep = ep, names = names, 
                               Vi = Vi, uh = uh, cr = cr,
-                              control = list(maxit = max_it, trace = 2))$par
+                              control = list(maxit = max_it))$par
     }else{
       pair <- paste(ep[i,1],ep[i,1], sep = "-")
       parms <- c(paste(sp[1], "ci", sep = ":"),paste(sp[2], "ci", sep = ":"),
@@ -151,7 +155,7 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
       par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data = data, pair = pairs[i], parms = parms,
                               par_all = par_all, ep = ep, names = names, 
                               Vi = Vi, uh = uh, cr = cr,
-                              control = list(maxit = max_it, trace = 2))$par
+                              control = list(maxit = max_it))$par
       
     }
   }
@@ -163,7 +167,7 @@ optimize_temporal_parameters <- function(par_all, data, names, Vi, uh, cr, max_i
   optimized_par <- optim(par_all[parms], fn = loglik, data = data, parms = parms,
                          par_all = par_all, ep = ep, names = names, 
                          Vi = Vi, uh = uh, cr = cr, 
-                         control = list(maxit = max_it, trace = 2))$par
+                         control = list(maxit = max_it))$par
   par_all[parms] <- optimized_par
   return(par_all)
 }
@@ -190,9 +194,6 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   
   # Returns:
   # The optimal parameters 
-  
-  require(stringr)
-  require(parallel)
   
   # Dimensions of the data
   Nt <- dim(data)[1]  # Number of time points
@@ -221,7 +222,7 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   pairs <- paste(ep[,1],ep[,2], sep = "-")
   
   # Check and initialize par_all if missing
-  par_all <- initialize_par_all_if_missing(par_all, names, pairs, par_s, ax)
+  par_all <- initialize_par_all_if_missing(par_all, names, pairs, par_s, ax, cr = cr)
 
   
   for (v in 1:3) {
@@ -244,12 +245,12 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   return(list(parm = param(par_all,names), par_all = par_all))
 }
 
+#' @importFrom stats kmeans
 selectUniformPointsIndices <- function(coordinates, N) {
-  library(stats)
-  
+
   colnames(coordinates) <- c("lon", "lat")
   # K-means clustering
-  clusters <- kmeans(coordinates, centers = N)
+  clusters <- stats::kmeans(coordinates, centers = N)
   
   # For each cluster center, find the index of the closest original data point
   indices <- sapply(1:N, function(cluster_num) {
@@ -278,9 +279,8 @@ selectPoints <- function(coordinates, betaIndex, v) {
   selectedIndices <- unique(c(betaIndex, sample(1:nrow(coordinates), size = v, prob = probabilities)))
   return(selectedIndices)
 }
-
+#' @importFrom stringr str_split
 generate_spatial_index_pairs <- function(coordinates,n1, n2) {
-  require(stringr)
   D = as.matrix(dist(coordinates))
   Ns = nrow(coordinates)
   rs <- selectUniformPointsIndices(coordinates, n1)
@@ -293,7 +293,7 @@ generate_spatial_index_pairs <- function(coordinates,n1, n2) {
     })
   })
   Si <- unique_elements(Si)
-  Si <- matrix(unlist(lapply(str_split(Si, pattern = "-"), as.numeric)), byrow = T, nrow = length(Si))
+  Si <- matrix(unlist(lapply(stringr::str_split(Si, pattern = "-"), as.numeric)), byrow = T, nrow = length(Si))
   return(Si)
 }
 
@@ -330,7 +330,7 @@ preprocess_data <- function(Ti, Si, coordinates) {
   return(list(uh = uh, u = u, h = h))
 }
 
-
+#' @importFrom geosphere distHaversine 
 estimate_gaussian_field_params <- function(data, wt, names, coordinates, tmax, max_it, n1, n2, dates, threshold_precip) {
   K = length(unique(wt))
   # Initialize the Gaussian field parameters storage
@@ -348,7 +348,7 @@ estimate_gaussian_field_params <- function(data, wt, names, coordinates, tmax, m
   vgm = lapply(1:nrow(ep), function(i){
     variable = unlist(ep[i,])
     dist = sort(unique(c(floor(dst))))
-    dist = dist[seq(1, length(dist)-100, length.out = 2)]
+    dist = dist[seq(1, length(dist)/1.5, length.out = 2)]
     vgm = spacetime_cov(data = data[,,variable],wt_id = 2:dim(data)[1], locations = coordinates, ds = dst,
                         dates = dates, lagstime = 0, dist = dist, covgm = T)
     vgm$v = paste(variable[1], variable[2], sep = "-")

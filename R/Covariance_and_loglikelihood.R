@@ -1,7 +1,3 @@
-
-
-############# Covariance function ############# 
-
 Matern <- function(h, r, v) {
   # Calculates the Matern covariance function for a given vector of distances.
   
@@ -17,7 +13,6 @@ Matern <- function(h, r, v) {
   rt[h == 0] <- 1  # Ensures that the covariance at distance 0 is 1.
   return(rt)
 }
-
 Gneiting <- function(h, u, par, dij) {
   # Multivariate space-time Gneiting's covariance function
   # From the paper: https://doi.org/10.1016/j.spasta.2022.100706
@@ -57,7 +52,7 @@ Gneiting <- function(h, u, par, dij) {
   aij <- sqrt((aii^2 + ajj^2) / 2)
   bij <- sqrt((bii^2 + bjj^2) / 2)
   
-  eij <- dij *((rii^vii * rjj^vjj) / rij^(2*vij)) * 
+  eij <- dij *((rii^vii * rjj^vjj) / rij^(2*vij)) *  exp((1/2)*vii)* exp((1/2)*vjj) / exp(vij) * 
     (gamma(vij) / (gamma(vii)^(1/2) * gamma(vjj)^(1/2))) * 
     sqrt((1-ci^2)*(1-cj^2)) * 
     (aii^(1/2) * ajj^(1/2)) / aij
@@ -70,7 +65,6 @@ Gneiting <- function(h, u, par, dij) {
   
   return(A1 * A2 + A3)
 }
-
 param <- function(par, names) {
   # Function to construct a data frame with covariance parameters 
   
@@ -125,7 +119,7 @@ param <- function(par, names) {
   }
   return(u)
 }
-
+#' @importFrom Matrix nearPD
 compute_beta <- function(parm, names, cr) {
   # Function for calculating correlations (dij) based on the Gneiting function
   
@@ -182,7 +176,6 @@ compute_beta <- function(parm, names, cr) {
   return(beta)  
 }
 
-
 compute_ax <- function(parm, names) {
   # Extract a matrix of correction terms ('ax') for a set of variables based on parameters 
   # provided in 'parm'. 
@@ -210,6 +203,7 @@ extract_beta <- function(parm, names) {
   })
   return(ax)
 }
+#' @importFrom VGAM pbinorm
 loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep, cr) {
   # Function to compute the log-likelihood for a pair of variables using the Gneiting spatio-temporal 
   # covariance model.
@@ -232,8 +226,6 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
   # Returns:
   #   The log-likelihood value for the given pair of variables based on the current model parameters.
   
-  require(VGAM)  
-  
   J = length(names)  # Number of variables
   pairs = paste(ep[,1], ep[,2], sep = "-")  # Constructing pairs from 'ep' data frame
   
@@ -248,11 +240,17 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
   beta <- try(compute_beta(parm, names, cr), silent = T)  # Compute beta coefficients
   ax <- compute_ax(parm, names)  # Compute ax correction terms
   
+  if(!is.character(beta)){
+    parm <- modify_beta_parm(parm, beta)
+    condition <- pd_condition(parm,names)
+  }else{
+    condition <- FALSE
+  }
   # Attempt Cholesky decompositions for 'ax' and 'beta', checking for positive definiteness
   ae <- try(chol(ax), silent = TRUE)
   be <- try(chol(beta), silent = TRUE)
   
-  if (!is.character(be) & (!is.character(ae) | length(which(ax == 0)) == length(names)^2)) {
+  if (condition & !is.character(be) & (!is.character(ae) | length(which(ax == 0)) == length(names)^2)) {
     # Proceed if both 'ax' and 'beta' matrices are valid for further computations
     
     # Map parameters to each variable pair in 'Vi'
@@ -307,7 +305,7 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
       
       # Case 4: Both variables are zero, and both are Precipitation
       if (!length(which(id3 == TRUE)) == 0) {
-        l3 = try(sum(log(pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3]))), silent = TRUE)
+        l3 = try(sum(log(VGAM::pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3]))), silent = TRUE)
         if (is.character(l3)) l3 = -abs(rnorm(1)) * 1e+20  # Handle errors in computing bivariate normal CDF
       }
       
@@ -321,6 +319,8 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
   }
 }
 
+#' @importFrom VGAM pbinorm
+#' @importFrom parallel mclapply
 
 loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
   # Calculates the total log-likelihood for spatial or spatio-temporal data based on model parameters,
@@ -343,8 +343,7 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
   # Returns:
   #   The total log-likelihood value for the data based on the current set of parameters.
   
-  require(VGAM)  # Load VGAM for statistical modeling capabilities.
-  
+
   J = length(names)  # Number of variables in the analysis.
   pairs = paste(ep[,1], ep[,2], sep = "-")  # Construct pairs from 'ep' for parameter naming.
   
@@ -359,12 +358,17 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
   parm = param(par, names)  # Organize parameters for each pair.
   beta <- try(compute_beta(parm, names, cr), silent = T)  # Compute beta coefficients
   ax = compute_ax(parm, names)  # Compute ax correction terms matrix.
-  
+  if(!is.character(beta)){
+    parm <- modify_beta_parm(parm, beta)
+    condition <- pd_condition(parm,names)
+  }else{
+    condition <- FALSE
+  }  
   # Attempt Cholesky decomposition to ensure positive definiteness.
   ae <- try(chol(ax), silent = TRUE)
   be <- try(chol(beta), silent = TRUE)
   
-  if (!is.character(be) & (!is.character(ae) | length(which(ax == 0)) == length(names)^2)) {
+  if (condition & !is.character(be) & (!is.character(ae) | length(which(ax == 0)) == length(names)^2)) {
     # Proceed if both 'ax' and 'beta' matrices are valid for further computations.
     
     # Map parameters to each variable pair in 'Vi'.
@@ -375,7 +379,7 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
     h = uh[,2]
     
     # Parallel computation of log-likelihood for each pair using mclapply (if multicore is intended, else lapply).
-    ll = mclapply(1:nrow(Vi), function(v) {
+    ll = parallel::mclapply(1:nrow(Vi), function(v) {
       # Initialize log-likelihood components for the current pair.
       l1 = l2 = l3 = l4 = 0
       par = parmm[[v]]  # Parameters for the current pair.
@@ -412,7 +416,7 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
         
         # l3: Case where both variables are zero and both are "Precipitation"
         if (!length(which(id3 == TRUE)) == 0) {
-          l3 = sum(log(pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3])))
+          l3 = sum(log(VGAM::pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3])))
         }
         
         # l4: Case where both variables have non-zero values
@@ -431,6 +435,7 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
     return(abs(rnorm(1)) * 1e+20)
   }
 }
+#' @importFrom VGAM pbinorm
 loglik_spatial <- function(par, data, h, uh, v) {
   # Function to calculate the log-likelihood for spatial data using the Matérn covariance function.
   # This is crucial for estimating geostatistical parameters in spatial models.
@@ -478,7 +483,7 @@ loglik_spatial <- function(par, data, h, uh, v) {
     }else if(!length(which(id1==T))==0){
       l1 = sum(log(pnorm((-cij[id1]*v2[id1])/sqrt(delta[id1]))))
     }else if(!length(which(id3==T))==0){
-      l3 = sum(pbinorm(0,0,var1 = 1, var2 = 1, cov12 = cij[id3]))
+      l3 = sum(VGAM::pbinorm(uh[id3, 7], uh[id3, 8],var1 = 1, var2 = 1, cov12 = cij[id3]))
     }
     
     # Return the aggregated negative log-likelihood, adjusting for errors or infinite values.
@@ -488,40 +493,6 @@ loglik_spatial <- function(par, data, h, uh, v) {
   }
 }
 
-init_space_par <- function(data, names, h, uh, max_it = 2000) {
-  # Initializes spatial parameters for each variable 
-  # by optimizing an initial log-likelihood function (loglik0) 
-  
-  # Arguments:
-  #   data: The dataset for which spatial parameters are being initialized. This could be
-  #         a matrix or data frame of observed values across locations.
-  #   names: A vector of variable names for which spatial parameters are to be initialized.
-  #   D: A matrix or data frame containing distances.
-  #   h: Vector of spatial distances used in the likelihood function.
-  #   uh: Matrix containing combined spatial and temporal distances, along with additional data,
-  #       used in the likelihood function.
-  #   mpar: A list or vector of model parameters that are held fixed during the optimization process.
-  #   max_it: Maximum number of iterations for the optimization process. Default is 2000.
-  
-  # Returns:
-  #   A list of optimized parameters for each variable. Each element in the list corresponds to
-  #   the set of parameters optimized for one of the variables specified in 'names'.
-  
-  # Perform parallel optimization for each variable using mclapply
-  par = mclapply(names, function(v) {
-    optim(
-      par = c(1, 0.1),  # Initial parameter guesses
-      fn = loglik_spatial,     # Objective function to minimize (negative log-likelihood)
-      data = data,
-      v = v,            # Current variable being optimized
-      h = h,
-      uh = uh,
-      control = list(maxit = max_it)  # Optimization control settings
-    )$par  # Extract the optimized parameters
-  })  
-  
-  return(par)
-}
 spacetime_cov <- function(data, wt_id, locations, ds = NULL, dates, lagstime, dist, covgm = TRUE) {
   # Computes spatial and temporal covariances for spatio-temporal data.
   
@@ -599,7 +570,6 @@ spacetime_cov <- function(data, wt_id, locations, ds = NULL, dates, lagstime, di
   # Combine and return results
   return(do.call(rbind, vgm))
 }
-
 cov_matrices = function(par, coordinates, names, M) {
   # Function for generating covariance matrices for a multivariate space-time model.
   # The covariance is calculated using Gneiting's function.
@@ -649,4 +619,21 @@ cov_matrices = function(par, coordinates, names, M) {
     return(do.call(cbind, cp_v1))
   })
   return(cp)
+}
+pd_condition = function(parm, names){
+  eij = sapply(names, function(v1){
+    sapply(names, function(v2){
+      dij = parm$dij[parm$v1==v1 & parm$v2==v2 |parm$v1==v2 & parm$v2==v1]
+      vij = parm$vij[parm$v1==v1 & parm$v2==v2 |parm$v1==v2 & parm$v2==v1]
+      return(dij * (exp(-vij)/gamma(vij)))
+    })
+  })
+  pd = try(chol(eij), silent = T)
+  return(!is.character(pd))
+}
+modify_beta_parm = function(parm, beta){
+  for (i in 1:nrow(parm)) {
+    parm$dij[i] = beta[parm$v1[i], parm$v2[i]] 
+  }
+  return(parm)
 }
