@@ -1,3 +1,14 @@
+#' Generate All Combinations of Variable Index Pairs
+#'
+#' Constructs a matrix containing all possible combinations of variable names, including self-pairs and cross-pairs. This facilitates the analysis and modeling of interactions between different variables in a multivariate dataset.
+#'
+#' @param names Vector of variable names from which pairs are to be generated.
+#'
+#' @return A data frame where each row represents a pair of variables, with columns 'v1' and 'v2' indicating the variable names in the pair. This includes both self-pairs (where 'v1' and 'v2' are the same) and cross-pairs (where 'v1' and 'v2' are different).
+#'
+#' @keywords internal
+#' @noRd
+
 generate_variable_index_pairs <- function(names) {
   # This function creates a matrix with all combinations of variable names
   u1 = sapply(names, function(v1) sapply(names, function(v2) v1))
@@ -8,6 +19,22 @@ generate_variable_index_pairs <- function(names) {
   
   return(ep)
 }
+#' Initialize Model Parameters If Missing
+#'
+#' Sets up the `par_all` vector with default values or based on provided parameters if it hasn't been initialized. This function ensures that all necessary model parameters are prepared for the modeling process.
+#'
+#' @param par_all Existing vector of all model parameters; if NULL, it will be initialized.
+#' @param names Vector of variable names involved in the model.
+#' @param pairs Generated pairs of variables for which parameters are set.
+#' @param par_s Initial scaling parameters for the covariance function.
+#' @param ax Correction term parameters to be updated in `par_all`.
+#' @param cr Initial correlation matrix used for beta computation.
+#'
+#' @return Updated `par_all` vector with all model parameters, including default and specified values.
+#'
+#' @keywords internal
+#' @noRd
+
 initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax, cr) {
   # Initialize the `par_all` vector if it is missing, with default values or using `par_s`
   if (is.null(par_all)) {
@@ -21,8 +48,8 @@ initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax, cr) 
     par_all[paste(pairs, "dij", sep = ":")] = 1
     par_all[paste(pairs, "bij", sep = ":")] = 1
     par_all[paste(names, "ci", sep = ":")] = 0
-    par_all[paste(pairs[1:length(names)], "rij", sep = ":")] <- par_s[1,] 
-    par_all[paste(pairs[1:length(names)], "vij", sep = ":")] <- par_s[2,] 
+    par_all[paste(pairs[1:length(names)], "rij", sep = ":")] <- 1#par_s[1,] 
+    par_all[paste(pairs[1:length(names)], "vij", sep = ":")] <- 1#par_s[2,] 
     par_all[paste(pairs, "ax", sep = ":")] <- 0
     parms <- c("a","b","c","d","e",paste(pairs, "aij", sep = ":"))
     par_all[parms] <- c(0.1, 0.1, 0.1, 0.1,0.1,rep(1, length(pairs)))
@@ -42,6 +69,18 @@ initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax, cr) 
   } 
   return(par_all)
 }
+#' Update Ax Parameters in Model Parameters
+#'
+#' Modifies the 'ax' parameters within the complete set of model parameters (`par_all`) using the covariance information provided by the 'ax' matrix. This adjustment is crucial for ensuring accurate covariance structures in the model.
+#'
+#' @param par_all The complete set of model parameters, including 'ax' values to be updated.
+#' @param names Vector of variable names, indicating the variables for which 'ax' adjustments are applied.
+#' @param ax Matrix or data frame containing the updated covariance information to adjust 'ax' parameters in `par_all`. If `ax` is not a matrix, it will be transformed to ensure positive definiteness before updating.
+#'
+#' @return The modified `par_all` vector with updated 'ax' parameters reflecting the provided covariance information.
+#'
+#' @keywords internal
+#' @noRd
 #' @importFrom Matrix nearPD
 update_ax_parameters <- function(par_all, names, ax) {
   # Update the `ax` parameters in `par_all` based on the covariance information in `ax`
@@ -68,6 +107,26 @@ update_ax_parameters <- function(par_all, names, ax) {
   }
   return(par_all)
 }
+#' Initialize Spatial Parameters for Variables
+#'
+#' Optimizes initial spatial parameters for each variable in a dataset. This function employs
+#' a log-likelihood based optimization approach to determine initial values of spatial parameters
+#' that best fit the spatial structure of the data for each variable.
+#'
+#' @param data The dataset for which spatial parameters are being initialized, typically
+#'        a 3D array or a list of spatial observations for multiple variables.
+#' @param names A vector of variable names for which spatial parameters are to be initialized.
+#' @param h Vector of spatial distances used in the likelihood function, representing
+#'        the spatial relationship between observation points.
+#' @param uh Matrix containing additional data required by the likelihood function, 
+#'        typically combining spatial and temporal distances with other relevant information.
+#' @param max_it Maximum number of iterations for the optimization process, defaulting to 2000.
+#'        This parameter controls the depth of the optimization search.
+#'
+#' @return A list containing optimized spatial parameters for each variable specified in 'names'.
+#'         Each element of the list corresponds to a set of parameters (e.g., range and smoothness)
+#'         optimized for the spatial structure of the corresponding variable.
+#' @keywords internal
 #' @importFrom parallel mclapply
 init_space_par <- function(data, names, h, uh, max_it = 2000) {
   # Initializes spatial parameters for each variable
@@ -103,6 +162,30 @@ init_space_par <- function(data, names, h, uh, max_it = 2000) {
   
   return(par)
 }
+#' Optimize Spatial Parameters for Variable Pairs
+#'
+#' Performs optimization of model parameters for each pair of variables based on spatial data.
+#' This function iteratively optimizes spatial parameters to maximize the log-likelihood
+#' of observing the data given the model, focusing on the spatial interaction between pairs of variables.
+#'
+#' @param par_all Initial set of all model parameters before optimization.
+#' @param data The dataset used for optimization, typically a 3D array or a list
+#'        of spatial observations for multiple variables over time.
+#' @param names Vector of variable names involved in the optimization process.
+#' @param Vi Matrix indicating the pairs of variables for which parameters are optimized.
+#' @param uh Matrix containing additional data required by the likelihood function,
+#'        combining spatial and temporal distances with other relevant information.
+#' @param cr Initial correlation matrix used in the optimization process to provide
+#'        a starting point for parameter estimation.
+#' @param max_it Maximum number of iterations allowed for the optimization algorithm,
+#'        controlling the depth of the search process.
+#' @param ep Data frame defining pairs of variables for analysis and optimization,
+#'        used to guide the optimization process by specifying which variable interactions to consider.
+#'
+#' @return A vector `par_all` updated with optimized model parameters for each variable pair.
+#'         This vector consolidates the model parameters post-optimization, ready for model application or further analysis.
+#'
+#' @keywords internal
 #' @importFrom stringr str_split
 optimize_pairs_spatial <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   pairs <- paste(ep[,1],ep[,2], sep = "-")
@@ -131,6 +214,34 @@ optimize_pairs_spatial <- function(par_all, data, names, Vi, uh, cr, max_it, ep)
   }
   return(par_all)
 }
+#' Optimize Spatio-Temporal Parameters for Variable Pairs
+#'
+#' Optimizes spatio-temporal model parameters for each pair of variables to enhance the
+#' log-likelihood of the observed data under the model. This function focuses on both spatial
+#' and temporal interactions between pairs of variables, refining the model's ability to capture
+#' complex spatio-temporal dependencies.
+#'
+#' @param par_all Initial comprehensive set of model parameters to be refined through optimization.
+#' @param data Dataset containing spatio-temporal observations, typically a 3D array or list
+#'        with dimensions representing locations, times, and variables.
+#' @param names Vector containing the names of the variables considered in the model,
+#'        indicating the scope of the optimization.
+#' @param Vi Matrix specifying variable pairs, directing the optimization towards relevant
+#'        variable interactions.
+#' @param uh Matrix that combines spatial and temporal distances with additional identifiers,
+#'        essential for defining the context of each data point in spatio-temporal space.
+#' @param cr Initial correlation matrix offering a preliminary estimate of relationships
+#'        between variables, serving as a foundation for optimization.
+#' @param max_it Specifies the maximum number of iterations for the optimization process,
+#'        setting a limit to ensure computational feasibility.
+#' @param ep Data frame defining pairs of variables for detailed analysis, guiding the optimization
+#'        process by highlighting specific interactions of interest.
+#'
+#' @return Updated `par_all` vector containing optimized parameters for each variable pair,
+#'         representing an enhanced set of model parameters post-optimization.
+#'         This updated parameter set is ready for subsequent model application or further analysis.
+#'
+#' @keywords internal
 #' @importFrom stringr str_split
 optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   pairs <- paste(ep[,1],ep[,2], sep = "-")
@@ -161,6 +272,35 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
   }
   return(par_all)
 }
+#' Optimize Temporal Parameters Across All Variable Pairs
+#'
+#' Performs a final optimization step to refine the temporal parameters of the model, 
+#' considering interactions across all variable pairs. This function aims to enhance the 
+#' model's temporal dynamics by optimizing a subset of parameters that influence temporal 
+#' relationships.
+#'
+#' @param par_all Comprehensive set of model parameters, including both spatial and temporal
+#'        parameters, to be optimized in this step.
+#' @param data Dataset containing spatio-temporal observations, used to evaluate the model's
+#'        performance and guide the optimization process.
+#' @param names Vector of variable names involved in the model, indicating the scope of the
+#'        optimization across variable interactions.
+#' @param Vi Matrix indicating the pairs of variables considered in the model, focusing the
+#'        optimization on relevant interactions.
+#' @param uh Matrix combining spatial and temporal distances along with additional identifiers,
+#'        critical for contextualizing each observation in spatio-temporal analysis.
+#' @param cr Initial correlation matrix providing a baseline of variable relationships, serving
+#'        as a starting point for optimization.
+#' @param max_it Maximum number of iterations allowed in the optimization process, setting
+#'        computational bounds to ensure completion.
+#' @param ep Data frame specifying pairs of variables to be analyzed, guiding the optimization
+#'        towards significant interactions.
+#'
+#' @return Updated `par_all` vector with optimized temporal parameters, representing an
+#'         improved set of model parameters after the optimization process. This vector is
+#'         essential for applying the model to new data or further analysis.
+#'
+#' @keywords internal
 optimize_temporal_parameters <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   # Final optimization step for the subset of parameters across all variable pairs
   parms <- c("a", "b", "c", "d", "e")
@@ -171,6 +311,30 @@ optimize_temporal_parameters <- function(par_all, data, names, Vi, uh, cr, max_i
   par_all[parms] <- optimized_par
   return(par_all)
 }
+#' Estimate Geostatistical Parameters for Multivariate Spatio-Temporal Data
+#'
+#' This function estimates the geostatistical parameters for a multivariate space-time model
+#' based on observed spatio-temporal data. It integrates various preprocessing and optimization
+#' steps to derive the optimal model parameters that best fit the observed data.
+#'
+#' @param data A 3D array containing the observed data values across time, space, and variables.
+#' @param wt_id Vector of identifiers indicating specific weather types or variable categorizations within the dataset.
+#' @param max_it Maximum number of iterations allowed during the optimization process.
+#' @param dates Vector of dates corresponding to the temporal observations within the dataset.
+#' @param tmax The maximum temporal lag considered for the model, influencing temporal dependency estimation.
+#' @param names Vector containing the names of the variables included in the analysis.
+#' @param par_all (Optional) Initial or current complete set of model parameters. If not provided, parameters are initialized within the function.
+#' @param coordinates Matrix containing the geographical coordinates of the spatial locations in the dataset.
+#' @param n1, n2 Parameters that define the granularity for generating spatial index pairs, affecting the spatial resolution of the model.
+#' @param ax Matrix of precomputed correction terms used to adjust the covariance matrix, aiding in model stabilization.
+#' @param cr Initial correlation matrix representing the base relationships between variables, used as a starting point for optimization.
+#' @param threshold_precip Threshold values for precipitation, used in preprocessing to distinguish between different precipitation intensities.
+#'
+#' @return A list containing two elements: `parm`, the parameter matrix formatted for interpretation and use in subsequent model applications, and
+#' `par_all`, the complete vector of optimized model parameters.
+#'
+#' @keywords internal
+#' @importFrom parallel mclapply
 
 estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NULL,
                           coordinates, n1, n2, ax, cr, threshold_precip) {
@@ -225,7 +389,7 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   par_all <- initialize_par_all_if_missing(par_all, names, pairs, par_s, ax, cr = cr)
 
   
-  for (v in 1:3) {
+  for (v in 1:2) {
     # Optimize spatial parameters for each pair
     par_all <- optimize_pairs_spatial(par_all, data, names, Vi, uh, cr, max_it, ep)
     
@@ -245,6 +409,17 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   return(list(parm = param(par_all,names), par_all = par_all))
 }
 
+#' Select Uniformly Distributed Points Indices
+#'
+#' This function selects indices of points from a given set of coordinates that are uniformly distributed across the spatial domain.
+#' The selection process involves performing k-means clustering on the coordinates and then selecting the closest data point to each cluster center.
+#'
+#' @param coordinates A matrix or data frame of geographical coordinates (longitude and latitude).
+#' @param N The number of uniformly distributed points to select.
+#'
+#' @return A vector of indices corresponding to the selected uniformly distributed points.
+#'
+#' @keywords internal
 #' @importFrom stats kmeans
 selectUniformPointsIndices <- function(coordinates, N) {
 
@@ -263,6 +438,18 @@ selectUniformPointsIndices <- function(coordinates, N) {
   return(indices)
 }
 
+#' Select Points Based on Probabilities
+#'
+#' Selects a set of points from a dataset based on probabilities calculated from their spatial distances to a specific reference point.
+#' The function calculates the probability for each point as inversely proportional to its squared distance from the reference point, ensuring a higher chance of selecting closer points.
+#'
+#' @param coordinates A matrix or data frame containing the coordinates of points.
+#' @param betaIndex The index of the reference point in the coordinates matrix/data frame.
+#' @param v The number of points to select, including the reference point.
+#'
+#' @return A vector of selected indices from the coordinates matrix/data frame, including the index of the reference point.
+#'
+#' @keywords internal
 
 
 selectPoints <- function(coordinates, betaIndex, v) {
@@ -279,6 +466,19 @@ selectPoints <- function(coordinates, betaIndex, v) {
   selectedIndices <- unique(c(betaIndex, sample(1:nrow(coordinates), size = v, prob = probabilities)))
   return(selectedIndices)
 }
+#' Generate Spatial Index Pairs
+#'
+#' Generates pairs of spatial indices based on a subset of uniformly distributed points and additional points selected based on proximity.
+#' This function first selects a set of n1 points uniformly distributed across the spatial domain. For each of these points,
+#' it then selects n2 points based on their proximity, ensuring a diverse yet focused selection of spatial pairs for further analysis.
+#'
+#' @param coordinates A matrix or data frame containing the coordinates of points.
+#' @param n1 The number of points to uniformly distribute across the spatial domain.
+#' @param n2 The number of points to select based on proximity to each of the n1 points.
+#'
+#' @return A matrix where each row represents a pair of indices corresponding to the spatial location pairs selected for analysis.
+#'
+#' @keywords internal
 #' @importFrom stringr str_split
 generate_spatial_index_pairs <- function(coordinates,n1, n2) {
   D = as.matrix(dist(coordinates))
@@ -296,6 +496,19 @@ generate_spatial_index_pairs <- function(coordinates,n1, n2) {
   Si <- matrix(unlist(lapply(stringr::str_split(Si, pattern = "-"), as.numeric)), byrow = T, nrow = length(Si))
   return(Si)
 }
+#' Generate Temporal Index Pairs
+#'
+#' Creates pairs of temporal indices based on specified time lags up to a maximum time lag (tmax). This function is useful for
+#' analyzing temporal relationships and covariances at different lags in spatio-temporal data.
+#'
+#' @param wt_id Identifiers (indices) corresponding to specific time points in the dataset.
+#' @param dates Vector of dates corresponding to the time dimension in the dataset.
+#' @param tmax Maximum temporal lag for which pairs are to be generated.
+#'
+#' @return A matrix with each row representing a pair of temporal indices and their corresponding time lag. The columns 't1' and 't2'
+#' represent the indices of the paired time points, and 'u' represents the time lag between them.
+#'
+#' @keywords internal
 
 generate_temporal_index_pairs <- function(wt_id,dates, tmax) {
   Ti = lapply(0:tmax, function(i){
@@ -307,6 +520,18 @@ generate_temporal_index_pairs <- function(wt_id,dates, tmax) {
   colnames(Ti) = c("t1", "t2", "u")
   return(Ti)
 }
+#' Generate Variable Index Pairs
+#'
+#' Generates a data frame containing all unique pairs of variable names, including pairs of the same variable. This is used for
+#' generating covariance matrices and parameter matrices where interactions between different variables (or the same variable) are
+#' considered.
+#'
+#' @param names A vector of variable names for which index pairs are to be generated.
+#'
+#' @return A data frame with two columns ('v1' and 'v2') listing all unique pairs of variables. The data frame includes both
+#' pairs of different variables and pairs of the same variable.
+#'
+#' @keywords internal
 
 generate_variable_index_pairs <- function(names) {
   u1 = sapply(names, function(v1) sapply(names, function(v2) v1))
@@ -316,12 +541,33 @@ generate_variable_index_pairs <- function(names) {
   ep = rbind(ep[ep$v1==ep$v2,], ep[!ep$v1==ep$v2,])
   return(ep)
 }
+#' Unique Elements Extraction
+#'
+#' Extracts unique elements from a vector or list, effectively removing duplicates.
+#'
+#' @param Si A vector or list from which unique elements need to be extracted.
+#'
+#' @return A vector containing only unique elements from the input.
+#'
+#' @keywords internal
 
 unique_elements <- function(Si) {
   Si <- unlist(Si)
   Si <- Si[!duplicated(Si)]
   return(Si)
 }
+#' Data Preprocessing for Spatio-Temporal Models
+#'
+#' Performs preprocessing on spatio-temporal data to prepare for model fitting, including computing spatial distances and temporal lags.
+#'
+#' @param Ti A matrix containing temporal index pairs and their respective lags.
+#' @param Si A matrix containing spatial index pairs.
+#' @param coordinates A matrix of spatial coordinates for each location.
+#'
+#' @return A list containing the preprocessed data, including a combined matrix of temporal lags, spatial distances, and indices (`uh`), as well as separate vectors of temporal lags (`u`) and spatial distances (`h`).
+#'
+#' @keywords internal
+
 preprocess_data <- function(Ti, Si, coordinates) {
   e <- expand.grid(1:nrow(Ti), 1:nrow(Si))
   u <- Ti[e[, 1], 3] 
@@ -330,7 +576,24 @@ preprocess_data <- function(Ti, Si, coordinates) {
   return(list(uh = uh, u = u, h = h))
 }
 
-#' @importFrom geosphere distHaversine 
+#' Estimation of Gaussian Field Parameters
+#'
+#' Estimates the parameters of a Gaussian field model for each weather type across spatial and temporal dimensions of weather data.
+#'
+#' @param data A 3D array containing weather data with dimensions [time, location, variable].
+#' @param wt Vector of weather type classifications for each time point in the data.
+#' @param names Vector of variable names in the data array.
+#' @param coordinates A matrix of geographic coordinates for the locations in the data.
+#' @param tmax Maximum time lag for temporal analysis.
+#' @param max_it Maximum number of iterations for optimization procedures.
+#' @param n1, n2 Parameters defining the granularity of spatial analysis.
+#' @param dates Vector of dates corresponding to the time points in the data.
+#' @param threshold_precip Threshold values for considering precipitation, used in data preprocessing.
+#'
+#' @return A list of estimated Gaussian field parameters for each weather type.
+#'
+#' @keywords internal
+#' @importFrom geosphere distHaversine
 estimate_gaussian_field_params <- function(data, wt, names, coordinates, tmax, max_it, n1, n2, dates, threshold_precip) {
   K = length(unique(wt))
   # Initialize the Gaussian field parameters storage

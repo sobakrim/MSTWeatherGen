@@ -1,4 +1,17 @@
-#' @importFrom lubridate year leap_year
+#' Season Indices Calculation
+#'
+#' Calculates the indices of dates within a specified season across multiple years.
+#' This function handles leap years and seasons that span the end of one year and the beginning of the next.
+#'
+#' @param dates A vector of dates to evaluate.
+#' @param season A list specifying the season with 'min_day', 'max_day', 'min_month', and 'max_month'.
+#' @param Year Optional. If specified, only returns indices for the given year.
+#'
+#' @return A vector of indices corresponding to dates within the specified season.
+#'         If 'Year' is specified, only returns indices for that year.
+#'
+#' @keywords internal
+#' @importFrom lubridate year leap_year month
 season_indices = function(dates, season, Year){
   
   years = unique(lubridate::year(dates))
@@ -13,7 +26,7 @@ season_indices = function(dates, season, Year){
       
       # Check if the season spans the end of the year
       if (season$min_month > season$max_month || (season$min_month == season$max_month && adjusted_min_day > adjusted_max_day)) {
-        d1 = as.Date(paste(Year, min(month(dates[lubridate::year(dates) %in% years[1]])), adjusted_min_day, sep = "-"))
+        d1 = as.Date(paste(Year, min(lubridate::month(dates[lubridate::year(dates) %in% years[1]])), adjusted_min_day, sep = "-"))
         d2 = as.Date(paste(Year, season$max_month, adjusted_max_day, sep = "-"))
       }else{
         d1 = as.Date(paste(Year, season$min_month, adjusted_min_day, sep = "-"))
@@ -81,6 +94,18 @@ season_indices = function(dates, season, Year){
     return(which(dates %in% md & lubridate::year(dates)==Year))
   }
 }
+#' Filter Seasonal Data
+#'
+#' Filters weather data and corresponding dates for a specified season.
+#'
+#' @param data A 3D array of weather data with dimensions [time, location, variable].
+#' @param dates A vector of dates corresponding to the time dimension of the data.
+#' @param season A list specifying the season with 'min_day', 'max_day', 'min_month', and 'max_month'.
+#' @param names Names of the variables in the data array to be used for analysis.
+#'
+#' @return A list containing the filtered weather data ('data_filtered') and corresponding dates ('dates_filtered').
+#'
+#' @keywords internal
 filter_season_data <- function(data, dates, season, names) {
   # Ensure 'dates' is converted to Date class
   dates <- as.Date(dates)
@@ -102,7 +127,16 @@ filter_season_data <- function(data, dates, season, names) {
   # Return the filtered and ordered data along with the corresponding dates
   return(list(data_filtered = data_filtered, dates_filtered = dates_filtered))
 }
-
+#' Haversine Distance Calculation
+#'
+#' Computes the Haversine distance between two points given their coordinates.
+#'
+#' @param point1 Coordinates of the first point in decimal degrees (lon, lat).
+#' @param point2 Coordinates of the second point in decimal degrees (lon, lat).
+#'
+#' @return The Haversine distance between the two points in kilometers.
+#'
+#' @keywords internal
 haversine <- function(point1, point2) {
   # Define the Haversine function
   # Convert degrees to radians
@@ -128,20 +162,31 @@ haversine <- function(point1, point2) {
   return(d)
 }
 
+#' Calculate Haversine Distance Between Two Coordinates
+#'
+#' Computes the Haversine distance between two coordinates using the geosphere package.
+#'
+#' @param i Index of the first coordinate.
+#' @param j Index of the second coordinate.
+#' @param coordinates Matrix with columns for the longitude and latitude of each location.
+#'
+#' @return The Haversine distance between the two coordinates in kilometers.
+#'
 #' @importFrom geosphere distHaversine
+#' @keywords internal
 ds = function(i,j,coordinates) {
   return(geosphere::distHaversine(coordinates[i,], coordinates[j,])/1000)
 }
-colMins = function(x) {
-  return(apply(x, 2, min))
-}
-colMaxs = function(x) {
-  return(apply(x, 2, max))
-}
-
-colSds = function(x) {
-  return(apply(x, 2, sd))
-}
+#' Calculate Insolation Clearness Index (ICI)
+#'
+#' Computes the Insolation Clearness Index (ICI) based on the provided radiation and time.
+#'
+#' @param radiation Measured radiation values.
+#' @param time Time corresponding to the radiation measurements.
+#'
+#' @return The Insolation Clearness Index (ICI).
+#'
+#' @keywords internal
 calculate_ICI <- function(radiation, time) {
   ## ICI : Insolation Clearness Index
   day_of_year <- as.integer(format(time, "%j"))

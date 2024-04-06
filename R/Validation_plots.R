@@ -171,7 +171,7 @@ plot_dry_wet_spells_maps = function(sim, observed, coordinates, dates){
     coord_cartesian(xlim=range(df$lon), ylim = range(df$lat)) +
     geom_point(aes(color = n), size=7, shape=15) + xlab("Longitude (degree)") + 
     ylab("Latitude (degree)") + 
-    scale_color_gradientn("Number of consecutive wet days", colours = rev(viridis(10, option="magma"))) + 
+    scale_color_gradientn("Number of consecutive wet days (NC)", colours = rev(viridis(10, option="magma"))) + 
     theme_bw() +
     theme(legend.position = "top") + 
     facet_grid(y ~ v_label) 

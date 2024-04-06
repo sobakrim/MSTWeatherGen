@@ -1,5 +1,19 @@
+#' Ordered Normalization
+#'
+#' Function for ordered normalization using Ordered Quantile Normalizing transformation.
+#'
+#' @param x Numeric vector to be normalized.
+#' @param left Numeric value specifying the left truncation.
+#' @param n_logit_fit The number of points to use in the logistic regression for extrapolation, default is the lesser of the length of x or 100,000.
+#' @param ... Additional arguments passed to the glm function.
+#' @param warn Logical flag indicating whether to issue a warning when ties are detected in the data.
+#'
+#' @return A list with class 'orderNorm' containing the normalized data (x.t), the original data (x), and a fitted model object (fit) for future extrapolation.
+#'
 #' @importFrom crch qcnorm
 #' @importFrom stats glm
+#'
+#' @keywords internal
 orderNorm <- function(x,left, n_logit_fit = min(length(x), 100000), ..., warn = TRUE) {
   # Function for ordered normalization Ordered Quantile normalizing transformation
   # Function inspired from "bestNormalize" package and adapted for truncated normal distributions.
@@ -22,8 +36,6 @@ orderNorm <- function(x,left, n_logit_fit = min(length(x), 100000), ..., warn = 
   na_idx <- is.na(x)
   
   if (nunique < length(x)) {
-    if(warn) warning('Ties in data, Normal distribution not guaranteed
-                     Ties are treated by averaging\n')
     ties_status <- 1
   }
   if(length(unique(x))==1) x = x + rnorm(length(x), sd = 1e-7)
@@ -54,11 +66,38 @@ orderNorm <- function(x,left, n_logit_fit = min(length(x), 100000), ..., warn = 
   class(val) <- 'orderNorm'
   val
 }
+#' Predict Binomial
+#'
+#' Function to predict binomial probabilities using a fitted model object.
+#'
+#' @param fit Fitted model object containing coefficients.
+#' @param newdata New data for prediction.
+#'
+#' @return Predicted binomial probabilities.
+#'
+#' @keywords internal
 predict_binomial = function(fit, newdata){
   if(missing(newdata)) newdata = fit$x_red
   pred = fit$coef[1]+fit$coef[2]*newdata
   return(1/(1+exp(-pred)))
 }
+#' Order Normalization for All Variables
+#'
+#' Function to perform normalization on a selected variable 'j' from 'data', considering spatial information 
+#' from 'coordinates' and a threshold 'left' for the transformation. This is particularly useful for variables with 
+#' many zero values, ensuring robust normalization across spatially correlated variables.
+#'
+#' @param data A matrix or data frame containing the variables to be normalized. Rows represent observations, 
+#'             and columns represent different variables.
+#' @param j The index of the variable within 'data' to be normalized.
+#' @param coordinates A matrix or data frame of spatial coordinates corresponding to each 
+#'                    variable in 'data'. It is used to calculate spatial distances and determine proximity.
+#' @param left A parameter for the orderNorm function, specifying the transformation threshold.
+#'
+#' @return The result of applying the orderNorm function to the selected variable 'j', considering spatial proximity 
+#'         and handling variables with a high proportion of zero values.
+#'
+#' @keywords internal
 orderNorm_all <- function(data, j, coordinates, left) {
   # Function to perform normalization on a selected variable 'j' from 'data', considering spatial information 
   # from 'coordinates' and a threshold 'left' for the transformation. This is particularly useful for variables with 
@@ -91,7 +130,20 @@ orderNorm_all <- function(data, j, coordinates, left) {
     return(orderNorm(x[!x==0],left = left))
   }
 }
-#' @exportS3method
+#' Predict Method for orderNormTransf Objects
+#'
+#' Function to predict the normalized values for new data using a fitted orderNormTransf object or 
+#' to perform inverse transformation.
+#'
+#' @param object Fitted orderNormTransf object.
+#' @param newdata Numeric vector of new data to be transformed. If NULL, transformation is applied to the original data.
+#' @param inverse Logical indicating whether to perform inverse transformation. Default is FALSE.
+#' @param warn Logical indicating whether to issue a warning when ties are detected in the data. Default is TRUE.
+#' @param ... Additional arguments to be passed.
+#'
+#' @return Transformed or inverse-transformed data based on the specified operation.
+#'
+#' @keywords internal
 predict.orderNormTransf <- function(object,
                                     newdata = NULL,
                                     inverse = FALSE, 
@@ -117,8 +169,18 @@ predict.orderNormTransf <- function(object,
   
   return(newdata)
 }
-#' @importFrom crch qcnorm
-#' @importFrom stats approx
+#' Inverse Transformation for orderNorm Objects
+#'
+#' Function to perform inverse transformation or normalization applied by the orderNorm function.
+#'
+#' @param orderNorm_obj Fitted orderNorm object containing details of the original normalization or transformation.
+#' @param new_points_x_t Transformed data points for which the original values are to be estimated.
+#' @param left Parameter used in the original transformation, affecting the normalization method.
+#' @param warn Logical indicating whether to issue warnings for transformations outside the observed domain. Default is FALSE.
+#'
+#' @return Estimated original data values corresponding to the transformed data points.
+#'
+#' @keywords internal
 inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FALSE) {
   # Reverses the normalization or transformation applied by the orderNorm function.
   # Arguments:
@@ -143,8 +205,7 @@ inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FAL
   }
   # If predictions have been made outside observed domain
   if (any(is.na(vals$y))) {
-    if(warn) warning('Transformations requested outside observed domain; logit stats::approx. on ranks applied')
-    
+
     fit <- orderNorm_obj$fit
     p <- crch::qcnorm(predict_binomial(fit), left = left)
     if(min(old_points)>0){
@@ -173,8 +234,18 @@ inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FAL
   
   return(vals$y)
 }
-#' @importFrom crch qcnorm
-#' @importFrom stats approx
+#' Transforms New Data Points using orderNorm Object
+#'
+#' Function to transform new data points based on a previously fitted normalization or transformation model.
+#'
+#' @param orderNorm_obj Fitted orderNorm object containing details of the original normalization or transformation.
+#' @param new_points New data points to be transformed.
+#' @param warn Logical indicating whether to issue warnings for transformations outside the observed domain.
+#' @param left Parameter affecting the normalization method used in the original transformation.
+#'
+#' @return Transformed data points based on the fitted model.
+#'
+#' @keywords internal
 orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
   # Transforms new data points based on a previously fitted normalization or transformation model.
   # This function is used to apply the same transformation to new data that was applied to the original data.
@@ -194,7 +265,6 @@ orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
   
   # If predictions have been made outside observed domain
   if (any(is.na(vals$y))) {
-    if (warn) warning('Transformations requested outside observed domain; logit approx. on ranks applied')
     fit <- orderNorm_obj$fit
     p <- crch::qcnorm(predict_binomial(fit), left = left)
     l_idx <- vals$x < min(old_points, na.rm = TRUE)
@@ -219,53 +289,81 @@ orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
   return(vals$y)
 }
 
-
+#' Scale Data
+#'
+#' Function to scale the input data based on daily mean and standard deviation, and optionally smooth them using a moving average.
+#'
+#' @param data Input weather data, organized as a 3D array where the dimensions are [time, locations, variables].
+#' @param names Names of the variables in the data.
+#' @param dates Vector of dates corresponding to the time dimension in the data.
+#' @param window_size Size of the window for the moving average used to smooth the daily mean and standard deviation. Default is 30.
+#'
+#' @return A list containing the scaled data and scale parameters (mean and standard deviation) for each variable.
+#' @importFrom lubridate year
+#' @keywords internal
 scale_data <- function(data, names, dates, window_size = 30) {
-  # Initialize scale parameters storage
-  scale_parm <- list(mu = list(), sd = list())
-  
-  # Convert dates to a consistent format for day extraction
-  days <- substr(as.Date(dates), 6, 11)
-  
-  # Define a moving average function
-  moving_average <- function(x, n) {
-    len <- length(x)
-    avg <- rep(NA, len)
+
+  if(length(unique(lubridate::year(dates))) > 4){
+    # Initialize scale parameters storage
+    scale_parm <- list(mu = list(), sd = list())
     
-    for (i in 1:len) {
-      lower <- max(1, i - n %/% 2)
-      upper <- min(len, i + n %/% 2)
-      window <- x[lower:upper]
-      avg[i] <- mean(window, na.rm = TRUE)
+    # Convert dates to a consistent format for day extraction
+    days <- substr(as.Date(dates), 6, 11)
+    
+    # Define a moving average function
+    moving_average <- function(x, n) {
+      len <- length(x)
+      avg <- rep(NA, len)
+      
+      for (i in 1:len) {
+        lower <- max(1, i - n %/% 2)
+        upper <- min(len, i + n %/% 2)
+        window <- x[lower:upper]
+        avg[i] <- mean(window, na.rm = TRUE)
+      }
+      
+      return(avg)
     }
     
-    return(avg)
-  }
-  
-  # Iterate over each variable except "Precipitation"
-  for (v in names[!names %in% "Precipitation"]) {
-    # Calculate daily mean and standard deviation for each variable
-    mu <- sapply(unique(days), function(day) colMeans(data[days == day, , v], na.rm = TRUE))
-    sd <- sapply(unique(days), function(day) apply(data[days == day, , v], 2, sd, na.rm = TRUE))
-    
-    # Smooth mu and sd using the moving average
-    mu_smooth <- apply(mu, 1, function(x) moving_average(x, window_size))
-    sd_smooth <- apply(sd, 1, function(x) moving_average(x, window_size))
-    
-    # Store smoothed parameters
-    scale_parm$mu[[v]] <- mu_smooth
-    scale_parm$sd[[v]] <- sd_smooth
-    
-    # Standardize data using smoothed parameters
-    for (i in 1:nrow(data)) {
-      day_index <- which(unique(days) == days[i])
-      data[i, , v] <- (data[i, , v] - mu_smooth[day_index]) / sd_smooth[day_index]
+    # Iterate over each variable except "Precipitation"
+    for (v in names[!names %in% "Precipitation"]) {
+      # Calculate daily mean and standard deviation for each variable
+      mu <- sapply(unique(days), function(day) colMeans(data[days == day, , v], na.rm = TRUE))
+      sd <- sapply(unique(days), function(day) apply(data[days == day, , v], 2, sd, na.rm = TRUE))
+      
+      # Smooth mu and sd using the moving average
+      mu_smooth <- apply(mu, 1, function(x) moving_average(x, window_size))
+      sd_smooth <- apply(sd, 1, function(x) moving_average(x, window_size))
+      
+      # Store smoothed parameters
+      scale_parm$mu[[v]] <- mu_smooth
+      scale_parm$sd[[v]] <- sd_smooth
+      
+      # Standardize data using smoothed parameters
+      for (i in 1:nrow(data)) {
+        day_index <- which(unique(days) == days[i])
+        data[i, , v] <- (data[i, , v] - mu_smooth[day_index,]) / sd_smooth[day_index,]
+      }
     }
+  }else{
+    warning('No scale is used. The number of years considered is too small to estimate the seasonal means and standard deviations.')
+    scale_parm = NULL
   }
-  
   # Return the standardized data and scale parameters
   return(list(data = data, scale_parm = scale_parm))
 }
+#' Estimate Lambda Transformations
+#'
+#' Function to estimate lambda transformations for each variable, location, and weather type based on the data.
+#'
+#' @param data Input weather data, organized as a 3D array where the dimensions are [time, locations, variables].
+#' @param wt Vector indicating the weather type for each observation.
+#' @param names Names of the variables in the data.
+#' @param coordinates Spatial coordinates corresponding to each location in the data.
+#'
+#' @return A list containing lambda transformations for each variable, location, and weather type, along with the thresholds for precipitation.
+#'
+#' @keywords internal
 estimate_lambda_transformations <- function(data, wt, names, coordinates) {
   ns = dim(data)[2]
   K = length(unique(wt))
@@ -301,6 +399,19 @@ estimate_lambda_transformations <- function(data, wt, names, coordinates) {
   })
   return(list(lambda_transformations = lambda_transformations, threshold_precip = threshold_precip))
 }
+#' Transform Data using Lambda Transformations
+#'
+#' Function to transform data using lambda transformations based on the provided lambda parameters.
+#'
+#' @param data Input weather data, organized as a 3D array where the dimensions are [time, locations, variables].
+#' @param wt Vector indicating the weather type for each observation.
+#' @param names Names of the variables in the data.
+#' @param coordinates Spatial coordinates corresponding to each location in the data.
+#' @param lmbd Lambda transformation parameters estimated for each variable, location, and weather type.
+#'
+#' @return Transformed data using lambda transformations.
+#'
+#' @keywords internal
 transformations <- function(data, wt, names, coordinates, lmbd) {
   ns = dim(data)[2]
   K = length(unique(wt))
@@ -345,7 +456,18 @@ transformations <- function(data, wt, names, coordinates, lmbd) {
 }
 
 
-
+#' Apply Inverse Transformations
+#'
+#' Function to apply inverse transformations to the simulated data, reversing the lambda transformations applied during simulation.
+#'
+#' @param sim Simulated weather data, organized as a 3D array where the dimensions are [time, locations, variables].
+#' @param wt Vector indicating the weather type for each time step.
+#' @param parm Parameters object containing lambda transformations and other model parameters.
+#' @param names Names of the variables included in the simulation.
+#'
+#' @return Simulated data with inverse transformations applied to bring it back to its original scale.
+#'
+#' @keywords internal
 
 apply_inverse_transformations <- function(sim, wt, parm, names) {
   # Reverses transformations applied to the simulated data for each weather type and variable.
@@ -386,7 +508,18 @@ apply_inverse_transformations <- function(sim, wt, parm, names) {
   
   return(sim)
 }
-
+#' Rescale Simulated Data
+#'
+#' Function to rescale simulated weather data for variables other than "Precipitation" to their original scale.
+#'
+#' @param sim Simulated weather data, organized as a 3D array where the dimensions are [time, locations, variables].
+#' @param parm Parameters object containing model parameters, including scale parameters (mu and sd) for each variable.
+#' @param names Names of the variables included in the simulation.
+#' @param dates Vector of dates corresponding to the time dimension in the sim array.
+#'
+#' @return Simulated data with variables other than "Precipitation" rescaled back to their original scale.
+#'
+#' @keywords internal
 rescale_data <- function(sim, parm, names, dates) {
   # Rescales simulated weather data for variables other than "Precipitation" to their original scale.
   #
@@ -408,7 +541,7 @@ rescale_data <- function(sim, parm, names, dates) {
     mu = parm$scale_parm$mu[[v]]
     sd = parm$scale_parm$sd[[v]]
     for (i in 1:nt) {
-      sim[i,,v] = (sim[i,,v]*sd[,which(unique(dayso)==days[i])])+mu[,which(unique(dayso)==days[i])]
+      sim[i,,v] = (sim[i,,v]*sd[which(unique(dayso)==days[i]),])+mu[which(unique(dayso)==days[i]),]
     }
   }
   

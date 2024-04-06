@@ -10,6 +10,8 @@
 #' @param dates A vector of dates corresponding to the time dimension in the data array, used for temporal analysis.
 #' @param by_season Logical flag indicating whether to perform the estimation seasonally (`TRUE`) or annually (`FALSE`).
 #' @param seasons A list defining the seasons, each with start and end days and months, required if `by_season` is `TRUE`.
+#' @param scale Logical, indicating if the data needs to be standardized (`TRUE`) or not (`FALSE`). If `scale` is `TRUE` each meteorological variable
+#' is standardized at each location using smoothed mean and standard deviation. 
 #' @param precipitation Logical, indicating if precipitation should be considered as a primary variable for analysis. Defaults to `TRUE`.
 #' @param names Optionally, names of the variables in the data array to be used for analysis. If `precipitation` is `TRUE`
 #' and `names` is not provided, "Precipitation" is assumed to be the first variable, with other variables numerically named.
@@ -19,7 +21,7 @@
 #' @param tmax The maximum temporal lag to be considered in the analysis.
 #' @param n1 First parameter defining spatial window size for analysis, crucial for detailed spatial analysis within the Gaussian field model.
 #' @param n2 Second parameter defining spatial window size.
-#' @return A list containing the results of the `MSTWeatherGen.Estim_season` function for each season (or for the entire year if `by_season` is `FALSE`),
+#' @return A list containing the results of the `MSTWeatherGen_Estim_season` function for each season (or for the entire year if `by_season` is `FALSE`),
 #' including estimated parameters and other outputs relevant to weather generation, such as weather type classifications and spatial dependencies.
 #' @details
 #' The model considers a \(p\)-dimensional stochastic process \(Y(s,t) = [Y_i(s,t)]_{i=1}^{p}\), defined in \(R^2 x R\), 
@@ -35,7 +37,7 @@
 #' @export
 
 
-MSTWeatherGen.Estim = function(data, dates, by_season = TRUE, scale = FALSE, seasons, precipitation = T, names = NULL, 
+MSTWeatherGen_Estim = function(data, dates, by_season = TRUE,  seasons, scale = FALSE, precipitation = T, names = NULL, 
                              names_weather_types = NULL, coordinates,
                              max_it, tmax, n1, n2){
   # Function for estimating parameters for a Multivariate Space-Time Stochastic Weather Generator (MSTWeatherGen).
@@ -54,7 +56,7 @@ MSTWeatherGen.Estim = function(data, dates, by_season = TRUE, scale = FALSE, sea
   #   n1, n2: Parameters defining spatial window sizes for the analysis.
   #
   # Returns:
-  #   A list of results from the MSTWeatherGen.Estim_season function for each season (or annually, if by_season is FALSE),
+  #   A list of results from the MSTWeatherGen_Estim_season function for each season (or annually, if by_season is FALSE),
   #   including estimated parameters and potentially other analytical outputs relevant to weather generation.
   
   # Validate input parameters, especially the requirement for 'seasons' when 'by_season' is TRUE
@@ -88,7 +90,7 @@ MSTWeatherGen.Estim = function(data, dates, by_season = TRUE, scale = FALSE, sea
   }
   # Perform the estimation for each season or for the entire year, based on 'by_season' flag
   swg <- lapply(seasons, function(season) {
-    MSTWeatherGen.Estim_season(data = data, dates = dates, scale = scale, precipitation = precipitation, 
+    MSTWeatherGen_Estim_season(data = data, dates = dates, scale = scale, precipitation = precipitation, 
                              names = names, names_weather_types = names_weather_types, 
                           coordinates = coordinates, season = season, max_it = max_it, tmax = tmax, 
                           n1 = n1, n2 = n2)
@@ -109,6 +111,7 @@ MSTWeatherGen.Estim = function(data, dates, by_season = TRUE, scale = FALSE, sea
 #' @param AR_lag The lag order of the autoregressive (AR) model used in the simulation, dictating how previous weather data influences future simulations.
 #' @param bk Coefficients matrices for the AR model, which may vary by season or weather type, playing a key role in the temporal modeling of weather variables.
 #' @return A 3D array (`sim`) of simulated weather data for the specified dates, encapsulating simulated values for each weather variable across spatial locations and over time.
+#' @importFrom abind abind
 #' @export
 
 MSTWeatherGen_Sim = function(dates_sim, dates_original, data, seasons = NULL, parm, AR_lag=1, bk) {
@@ -161,7 +164,7 @@ MSTWeatherGen_Sim = function(dates_sim, dates_original, data, seasons = NULL, pa
                                      parm = parm[[seasons_assigned[change_season_indices[s]]]], 
                                      AR_lag = AR_lag, bk = bk[[seasons_assigned[change_season_indices[s]]]])
       Z_initial <- sm$Z_initial_next
-      sim <- abind(sim, sm$sim, along = 1)  # Append the new simulation data to the overall simulation.
+      sim <- abind::abind(sim, sm$sim, along = 1)  # Append the new simulation data to the overall simulation.
     }
   } else {
     # For non-seasonal simulation, simply simulate weather data for the entire period.
@@ -171,8 +174,30 @@ MSTWeatherGen_Sim = function(dates_sim, dates_original, data, seasons = NULL, pa
   
   return(sim)
 }
-
-MSTWeatherGen.Estim_season = function(data, dates, precipitation = T, scale = FALSE, names = NULL, 
+#' Seasonal Estimation for MSTWeatherGen
+#'
+#' Performs seasonal estimation for the MSTWeatherGen package, which includes identification of weather types,
+#' estimation of scaling parameters, computation of transition probabilities between weather types, and estimation
+#' of parameters for the Gaussian field model.
+#'
+#' @param data Array of weather data with dimensions [time, location, variable].
+#' @param dates Vector of dates corresponding to the time dimension of the data.
+#' @param precipitation Logical indicating if precipitation is to be considered as a primary variable.
+#' @param scale Logical, indicating if the data needs to be standardized (`TRUE`) or not (`FALSE`). If `scale` is `TRUE` each meteorological variable
+#' is standardized at each location using smoothed mean and standard deviation. 
+#' @param names Names of the variables in the data array to be used for analysis.
+#' @param names_weather_types Subset of 'names', variables to be used for weather type classification.
+#' @param coordinates Matrix with columns for the coordinates of each location.
+#' @param season Vector of integers representing months to define the season for analysis.
+#' @param max_it Maximum number of iterations for optimization procedures.
+#' @param tmax Maximum time lag for temporal analysis.
+#' @param n1, n2 Parameters defining spatial window size for analysis.
+#'
+#' @return A list containing dates, scale parameters, weather types, transition probabilities, lambda transformations,
+#' and parameters for the Gaussian field model for the specified season.
+#'
+#' @keywords internal
+MSTWeatherGen_Estim_season = function(data, dates, precipitation = T, scale = FALSE, names = NULL, 
                                     names_weather_types = NULL, coordinates,
                                     season, max_it, tmax, n1, n2) {
   # Function to perform seasonal estimation for a space-time stochastic weather generator.
@@ -256,6 +281,27 @@ MSTWeatherGen.Estim_season = function(data, dates, precipitation = T, scale = FA
   return(list(dates = dates, wt = wt, scale_parm = scale_parm,
               transitions = transitions, lmbd = lmbd, gf_par = gf_par))
 }
+#' Seasonal Simulation in MSTWeatherGen
+#'
+#' Simulates seasonal weather data using the Multivariate Space-Time Stochastic Weather Generator (MSTWeatherGen).
+#' This function is designed to generate synthetic weather data for a specified season, leveraging an autoregressive model 
+#' and predefined parameters to accurately reflect weather type transitions and spatial-temporal correlations.
+#'
+#' @param dates Vector of dates for which to simulate weather data.
+#' @param names Names of weather variables to be simulated.
+#' @param first_state Optional initial state (weather type) for the simulation. If not provided, it is determined based on state frequencies.
+#' @param Z_initial Optional initial conditions for the autoregressive (AR) process. If not provided, conditions are generated based on the initial state's covariance structure.
+#' @param parm Parameters object containing the stochastic weather generator settings, including weather types, transition probabilities, and scaling parameters.
+#' @param AR_lag Lag order of the AR model to be used in the simulation.
+#' @param bk A list of Bk matrices for the AR model, one for each weather type, essential for generating correlated weather variables across time.
+#'
+#' @return A list containing:
+#' \itemize{
+#'   \item \code{sim}: A 3D array of simulated weather data for the specified dates.
+#'   \item \code{wt}: A vector indicating the sequence of simulated weather types.
+#'   \item \code{Z_initial_next}: Initial conditions for subsequent simulations, facilitating sequential simulation processes.
+#' }
+#' @keywords internal
 
 MSTWeatherGen_Sim_season = function(dates, names, first_state = NULL, Z_initial = NULL, parm, AR_lag = 1, bk) {
   # Function to simulate seasonal weather data using the multivariate space-time stochastic weather generator.

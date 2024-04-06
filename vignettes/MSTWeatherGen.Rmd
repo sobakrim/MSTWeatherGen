@@ -29,6 +29,7 @@ First, let's load the `MSTWeatherGen` package.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(MSTWeatherGen)
+library(lubridate)
 ```
 
 ## Data
@@ -42,10 +43,8 @@ The data considered here is the meteorological dataset SAFRAN, developed by Mét
 ```{r echo=TRUE}
 data("data", package = "MSTWeatherGen")
 data("coordinates", package = "MSTWeatherGen")
-#load("/home/sobakrim/Bureau/MSTWeatherGen/MSTWeatherGen/data/real_data.rda")
-#load("/home/sobakrim/Bureau/MSTWeatherGen/MSTWeatherGen/data/coordinates.rda")
-names = c("Precipitation","Wind","Temp_max")
-dates = seq(as.Date("2017-01-01"),as.Date("2021-12-31"), by="day")
+names = c("Precipitation", "Wind", "Temp_max")
+dates = seq(as.Date("2019-01-01"),as.Date("2021-12-31"), by="day")
 ```
 
 ### Note on data needed for `MSTWeatherGen`
@@ -80,8 +79,8 @@ If the considered data does not exhibit seasonality one can use the whole period
 All the data being ready, we can now proceed to the estimation of the parameters using `MSTWeatherGen.Estim` function.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-names_weather_types = c("Wind", "Temp_max")
-swg = MSTWeatherGen.Estim(data = data, seasons = seasons,dates = dates, names = names, by_season = T, 
+names_weather_types = names
+swg = MSTWeatherGen_Estim(data = data, seasons = seasons,dates = dates, names = names, by_season = T, scale = F, 
                         precipitation = T,names_weather_types = names_weather_types,
                         coordinates= coordinates, max_it=100, tmax=2, n1=5, n2=5)
 ```
@@ -115,23 +114,49 @@ Finally, to validate our simulation, we can compare the simulated data against o
 We first choose a location to use for validation.
 
 ```{r echo=TRUE}
-Avignon <- which.min(apply(coordinates, 1, function(point) {
-  sqrt(sum((point - c(4.8055, 43.9493))^2))
+Marseille  <- which.min(apply(coordinates, 1, function(point) {
+  sqrt(sum((point - c(5.37, 43.2965))^2))
 }))
 ```
 
-We now plot the observed empirical density versus simulated weather variables in Avignon during the seasons considered (winter (DJF), spring (MAM), summer (JJA), and fall (SON)) using `plot_observed_vs_simulated_density`function
+We can compare observed and simulated maximum temperature
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
+library(ggplot2)
+library(tidyr)
+dates_to_plot <- seq(as.Date("2021-01-01"),as.Date("2021-12-31"), by="day")
+df <- data.frame(
+  Time = dates[dates %in% dates_to_plot],
+  Observed = data[dates %in% dates_to_plot,Marseille ,"Temp_max"], 
+  Simulated = sim[dates %in% dates_to_plot,Marseille , "Temp_max"] 
+)
+
+df_long <- pivot_longer(df, cols = c(Observed, Simulated), names_to = "Type", values_to = "Value")
+
+ggplot(df_long, aes(x = Time, y = Value, color = Type)) +
+  geom_line() +
+  theme_minimal() +
+  labs(title = "Observed vs simulated maximum Temperature",
+       x = "Time",
+       y = "Value",
+       color = "Type") + theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual("",values = c("Observed" = "blue", "Simulated" = "red")) # Custom colors
+```
+
+
+
+We now plot the observed empirical density versus simulated weather variables in Marseille  during the seasons considered (winter (DJF), spring (MAM), summer (JJA), and fall (SON)) using `plot_observed_vs_simulated_density`function
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
 plot_observed_vs_simulated_density(sim = sim, observed = data, dates = dates, 
-                              seasons = seasons, location = Avignon, names = names, names_seasons =names_seasons)
+                              seasons = seasons, location = Marseille , names = names, names_seasons =names_seasons)
 
 ```
 
-Next, we can compare the observed and simulated monthly variable means in Avignon using `plot_mean_by_month` function
+Next, we can compare the observed and simulated monthly variable means in Marseille  using `plot_mean_by_month` function
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
-plot_mean_by_month(sim = sim, observed = data,places = Avignon, names_places = "Avignon", names = names, dates = dates)
+plot_mean_by_month(sim = sim, observed = data,places = Marseille , names_places = "Marseille ", names = names, dates = dates)
 ```
 
 Then, we can compare simulated and observed frequency of wet days in the considered area during the considered seasons

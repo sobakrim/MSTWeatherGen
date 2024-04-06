@@ -1,4 +1,12 @@
+#' Data Compression
+#'
+#' Function to compress data using the PTA3 method.
+#'
+#' @param data The dataset to be compressed.
+#' @return The compressed data.
+#'
 #' @importFrom PTAk PTA3
+#' @keywords internal
 data_compression = function(data) {
   # Data compression function
   # Arguments:
@@ -26,15 +34,33 @@ data_compression = function(data) {
   
   return(pca)
 }
+#' Weather Types Identification and Visualization
+#'
+#' Function to identify and visualize different weather types (WTs) based on input data.
+#'
+#' @param data An array with dimensions [time, locations, variables] containing meteorological data.
+#' @param variables Names of variables used for constructing weather types, e.g., wind, temperature.
+#' @param dates Vector of dates corresponding to the first dimension of the data.
+#' @param n_wt Optional; predefined number of weather types to identify.
+#' @param coordinates Data frame (or matrix) containing coordinates of the locations.
+#' @param max_number_wt Optional; maximum number of weather types for automatic identification.
+#' @param threshold Threshold used for defining wet days in precipitation analysis (default=0).
+#' @param return_plots Logical indicating whether to return plots.
+#' @param names_units Units of the variables for labeling plots.
+#' @param dir Directory where to save the generated plots.
+#' @return A list containing the classification of each time point into weather types,
+#'   and optionally, plots illustrating the weather types.
+#'
+#' @keywords internal
 #' @import viridis
-#' @importFrom mclust Mclust
+#' @import mclust 
 #' @import ggplot2
 weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
                          max_number_wt = NULL,threshold = 0, return_plots = T, 
                          names_units, dir){
   # Function to identify and visualize different weather types (WTs) based on input data
   # Arguments:
-  #   data: An array with dimensions time*location*variable containing meteorological data
+  #   data: An array with dimensions [time, locations, variables] containing meteorological data
   #   variables: Names of variables used for constructing weather types, e.g., wind, temperature
   #   dates: Vector of dates corresponding to the first dimension of the data
   #   n_wt: Optional; predefined number of weather types to identify
@@ -138,6 +164,16 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
     return(list(cluster=cluster, model = m))
   }
 }
+#' Transition Matrix Estimation
+#'
+#' Function to estimate transition matrices based on weather types.
+#'
+#' @param wt A vector indicating the weather type.
+#' @param dates A vector of dates corresponding to each weather type.
+#' @param K The total number of unique weather types.
+#' @return A square matrix of size K x K where each element [i, j] represents the normalized probability
+#'   of transitioning from weather type i to weather type j.
+#' @keywords internal
 #' @importFrom lubridate year
 estimtransition = function(wt, dates, K){
   # Function to estimate transition matrices based on weather types 
@@ -171,9 +207,19 @@ estimtransition = function(wt, dates, K){
   
   return(M)
 }
+#' Estimate Transition Matrices
+#'
+#' Function to estimate transition matrices between clusters over time.
+#'
+#' @param cluster A vector of cluster assignments for each time point.
+#' @param dates A vector of dates corresponding to each time point.
+#' @param nb Base number of neighbors to consider for each year, default is 30.
+#' @param K The number of clusters, which determines the size of the transition matrices.
+#' @return A list of transition matrices, each corresponding to a time point. These matrices contain
+#'   the estimated probabilities of transitioning from one cluster to another based on the nearest neighbors' approach.
+#' @keywords internal
 #' @importFrom FNN get.knn
 #' @importFrom lubridate year
-
 estimate_transitions = function(cluster, dates, nb = 30, K){
   # Function to estimate transition matrices between clusters over time
   # Arguments:
@@ -225,6 +271,18 @@ estimate_transitions = function(cluster, dates, nb = 30, K){
   
   return(tm)
 }
+#' Simulate Weather Types
+#'
+#' Function to simulate weather types over specified dates using transition matrices.
+#'
+#' @param first_state The initial weather type from which to start the simulation.
+#' @param dates_sim A vector of dates for which the weather types are to be simulated.
+#' @param dates A vector of dates corresponding to the transition matrices in 'tm'.
+#' @param tm A list of transition matrices, each representing the transition probabilities between weather types for a specific date.
+#' @param K The total number of unique weather types or states.
+#' @return A vector of simulated weather types or states for each date in 'dates_sim'.
+#' @keywords internal
+
 simulate_weathertypes = function(first_state, dates_sim, dates, tm, K) {
   # Function to simulate weather types over specified dates using transition matrices
   # Arguments:

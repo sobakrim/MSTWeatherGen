@@ -1,4 +1,15 @@
-#' @importFrom Matrix chol2inv 
+#' Calculate Bk Matrices for Autoregressive (AR) Model
+#'
+#' Computes the coefficient matrices (Bk) for an autoregressive (AR) model using lagged covariance matrices.
+#'
+#' @param C_k_matrices A list of covariance matrices, where each matrix represents the covariance at a different time lag. 
+#'                     C_k_matrices[[1]] is the covariance matrix at lag 0.
+#'
+#' @return A list of Bk matrices (coefficient matrices) for the AR model, including Bk_0, which is derived separately from the rest of the Bk matrices.
+#'
+#' @importFrom Matrix chol2inv
+#'
+#' @keywords internal
 calculate_Bk_matrices <- function(C_k_matrices) {
   # Function for calculating coefficients matrices (Bk) for an autoregressive (AR) model
   # using lagged covariance matrices (C_k_matrices).
@@ -85,6 +96,19 @@ calculate_AR_coefficients_matrices <- function(parm, coordinates, AR_lag){
   })
   return(bk)
 }
+#' Simulate AR Process
+#'
+#' Simulates the autoregressive (AR) process to generate synthetic weather data.
+#'
+#' @param Bk A list of Bk matrices for the AR model.
+#' @param M The lag order of the AR model.
+#' @param num_steps The number of time steps to simulate.
+#' @param Z_initial Initial conditions for the AR process.
+#' @param wt A vector of weather types corresponding to each time step.
+#'
+#' @return A list containing the simulated values of Z for each time step.
+#'
+#' @keywords internal
 simulate_Z <- function(Bk, M, num_steps, Z_initial,wt) {
   n <- nrow(Bk[[1]]$bk$Bk_0)  # Assuming Bk0 is square and represents the dimension of Z
   Z_list <- vector("list", num_steps)  # List to store the simulated values of Z
@@ -107,6 +131,17 @@ simulate_Z <- function(Bk, M, num_steps, Z_initial,wt) {
   
   return(Z_list)
 }
+#' Generate Initial Conditions for AR Process
+#'
+#' Generates initial conditions for the autoregressive (AR) process based on Bk matrices and initial weather type.
+#'
+#' @param AR_lag The lag order of the AR model.
+#' @param bk A list of Bk matrices for the AR model, one for each weather type.
+#' @param wt The initial weather type (state) for the simulation.
+#'
+#' @return A matrix representing the initial conditions for the AR process simulation.
+#'
+#' @keywords internal
 generate_initial_conditions <- function(AR_lag, bk, wt) {
   # Generate initial conditions for the AR process based on Bk matrices and initial weather type.
   #
@@ -125,10 +160,22 @@ generate_initial_conditions <- function(AR_lag, bk, wt) {
     Zm <- L %*% rnorm_vals
     return(Zm)
   })
-  Z_initial <- simulate_Z(Bk = bk, M = AR_lag, num_steps = AR_lag+1, Z_initial = Z_initial, wt = wt)
+  num_steps <- 20
+  Z_initial <- simulate_Z(Bk = bk, M = AR_lag, num_steps = num_steps, Z_initial = Z_initial, wt = wt)
   Z_initial <- as.matrix(do.call(cbind, Z_initial)[,(length(Z_initial)-AR_lag+1):length(Z_initial)])
   return(Z_initial)
 }
+#' Convert List to 3D Array
+#'
+#' Converts a list of matrices into a 3D array.
+#'
+#' @param Y A list of matrices, where each matrix represents simulated data for a specific time step.
+#' @param names Vector of names representing the variables in the simulated data (columns of the matrices).
+#' @param dates Vector of dates representing the time steps.
+#'
+#' @return A 3D array where the first dimension corresponds to time steps, the second dimension corresponds to spatial locations, and the third dimension corresponds to variables.
+#'
+#' @keywords internal
 list_to_array <- function(Y, names, dates) {
   # Converts a list of matrices into a 3D array.
   #
@@ -150,6 +197,18 @@ list_to_array <- function(Y, names, dates) {
   
   return(sim_array)
 }
+#' Predict Most Probable Weather Type
+#'
+#' Predicts the most likely weather type for the next time step in a simulated weather series.
+#'
+#' @param sim A matrix containing simulated weather data for a single time step.
+#' @param centroids A list of centroids, where each centroid is a vector representing the mean values of weather variables for a specific weather type.
+#' @param transitions A list (or matrix) of transition probabilities between weather types. Each element transitions[[i]][j, k] represents the probability of transitioning from weather type j to k.
+#' @param names_weather_types Names of the weather variables used to determine the weather type.
+#'
+#' @return The predicted weather type for the next time step, selected based on the calculated probabilities.
+#'
+#' @keywords internal
 most_probable_weather_type = function(sim, centroids, transitions, names_weather_types) {
   # Function to predict the most likely weather type for the next time step in a simulated weather series.
   #
@@ -176,6 +235,19 @@ most_probable_weather_type = function(sim, centroids, transitions, names_weather
   
   return(new_wt)
 }
+#' Find Centroids
+#'
+#' Calculates centroids of weather types for each season.
+#'
+#' @param data A multi-dimensional array of weather data, with dimensions [time, locations, variables].
+#' @param dates A vector of dates corresponding to the time dimension in the data array.
+#' @param seasons A list defining the start and end dates of each season.
+#' @param wt_seasons A list containing vectors of weather type classifications for each season.
+#' @param names_weather_types Names of the weather variables used to determine the weather type centroids.
+#'
+#' @return A list of lists, where each inner list contains the centroids for each weather type within a specific season.
+#'
+#' @keywords internal
 find_centroids = function(data, dates, seasons, wt_seasons, names_weather_types) {
   # Calculates centroids of weather types for each season.
   #
@@ -210,6 +282,16 @@ find_centroids = function(data, dates, seasons, wt_seasons, names_weather_types)
   
   return(centroids)
 }
+#' Assign Seasons
+#'
+#' Assigns a season to each date based on predefined season boundaries.
+#'
+#' @param dates A vector of dates to classify into seasons.
+#' @param seasons A list where each element represents a season with its start and end dates and months.
+#'
+#' @return A numeric vector where each element represents the season assigned to the corresponding date in the input vector.
+#'
+#' @keywords internal
 assign_seasons <- function(dates, seasons) {
   # Assigns a season to each date based on predefined season boundaries.
   #
