@@ -3,7 +3,7 @@ Title: Multivariate Space-Time Weather Generator
 Version: 0.1.0.9000
 Authors@R: 
     c(
-    person(given = "Saïd",
+    person(given = "Said",
            family = "Obakrim",
            role = c("aut", "cre"),
            email = "saidobak@gmail.com",
@@ -13,10 +13,7 @@ Authors@R:
            role = "aut",
            email = "jean-francois.rey@inrae.fr",
            comment = c(ORCID = "0000-0003-3281-6701")))
-Description: Simulation model of multivariate spatio-temporal meteorological variables.
-             It provides tools for estimating the model parameters and generating
-             synthetic weather data that can be used for a variety of applications,
-             including climate research, agricultural or hydrological modeling.
+Description: Multivariate Space-Time Weather Generator package is designed for the simulation of multivariate spatio-temporal meteorological variables. It provides tools for estimating the model parameters and generating synthetic weather data that can be used for a variety of applications, including climate research, agricultural or hydrological modeling.  
 License: GPL (>=3) | file LICENSE
 URL: https://github.com/sobakrim/MSTWeatherGen,
      http://sobakrim.github.io/MSTWeatherGen
@@ -24,11 +21,14 @@ BugReports: https://github.com/sobakrim/MSTWeatherGen/issues
 Depends: R (>= 4.0.0)
 Imports: 
     Matrix, stats, PTAk (>= 2.0.0), lubridate (>= 1.9.3), abind (>= 1.4-5),
-    mclust (>= 6.0.0), ggplot2 (>= 3.0.0), viridis (>= 0.6.4), FNN (>= 1.1.0),
-    VGAM (>= 1.1-9), stringr (>= 1.5.0), crch (>= 1.1-2)
+    mclust (>= 6.1), ggplot2 (>= 3.5.0), viridis (>= 0.6.5), FNN (>= 1.1.4),
+    stringr (>= 1.5.1), crch (>= 1.1-2), dplyr (>= 1.1.4), VGAM (>= 1.1-10), 
+    geosphere (>= 1.5-18), ggpubr (>= 0.6.0), patchwork (>= 1.2.0)
 Suggests:
     knitr,
-    rmarkdown
-VignetteBuilder: knitr
+    rmarkdown,
+    maps
+VignetteBuilder: knitr, rmarkdown, maps
 Encoding: UTF-8
 RoxygenNote: 7.3.1
+LazyData: true

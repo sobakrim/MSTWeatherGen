@@ -68,7 +68,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Running a simple simulation</h1>
             
-            <h4 data-toc-skip class="date">2024-02-29</h4>
+            <h4 data-toc-skip class="date">2024-04-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/HEAD/vignettes/MSTWeatherGen.Rmd"><code>vignettes/MSTWeatherGen.Rmd</code></a></small>
       <div class="hidden name"><code>MSTWeatherGen.Rmd</code></div>
@@ -77,74 +77,258 @@
 
     
     
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>This vignette provides a step-by-step guide on running a stochastic
+weather generator using the <code>MSTWeatherGen</code> package. From
+loading the historical weather data and spatial coordinates, performing
+parameter estimation, to running simulations and generating validation
+plots. This guide covers all you need to get started with
+<code>MSTWeatherGen</code>, but does not provide the technical details
+of the methods considered.</p>
+</div>
+<div class="section level2">
+<h2 id="load-the-mstweathergen-package">Load the <code>MSTWeatherGen</code> Package<a class="anchor" aria-label="anchor" href="#load-the-mstweathergen-package"></a>
+</h2>
+<p>First, let’s load the <code>MSTWeatherGen</code> package.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sobakrim/MSTWeatherGen">MSTWeatherGen</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::logLik' by 'stats::logLik' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::AIC' by 'stats::AIC' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::deviance' by 'stats::deviance' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::residuals' by 'stats::residuals' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::effects' by 'stats::effects' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'Matrix::cov2cor' by 'stats::cov2cor' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::model.matrix' by</span></span>
-<span><span class="co">#&gt; 'stats::model.matrix' when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::predict' by 'stats::predict' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::fitted' by 'stats::fitted' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::weights' by 'stats::weights' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::coefficients' by</span></span>
-<span><span class="co">#&gt; 'stats::coefficients' when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'Matrix::toeplitz' by 'stats::toeplitz' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::confint' by 'stats::confint' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::model.frame' by 'stats::model.frame'</span></span>
-<span><span class="co">#&gt; when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::df.residual' by 'stats::df.residual'</span></span>
-<span><span class="co">#&gt; when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::coef' by 'stats::coef' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::vcov' by 'stats::vcov' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::case.names' by 'stats::case.names'</span></span>
-<span><span class="co">#&gt; when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::resid' by 'stats::resid' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::BIC' by 'stats::BIC' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::dfbeta' by 'stats::dfbeta' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::nobs' by 'stats::nobs' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::hatvalues' by 'stats::hatvalues' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::variable.names' by</span></span>
-<span><span class="co">#&gt; 'stats::variable.names' when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::fitted.values' by</span></span>
-<span><span class="co">#&gt; 'stats::fitted.values' when loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::terms' by 'stats::terms' when loading</span></span>
-<span><span class="co">#&gt; 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::formula' by 'stats::formula' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'VGAM::biplot' by 'stats::biplot' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Warning: replacing previous import 'Matrix::update' by 'stats::update' when</span></span>
-<span><span class="co">#&gt; loading 'MSTWeatherGen'</span></span>
-<span><span class="co">#&gt; Package: MSTWeatherGen | MST Weather Generator</span></span>
-<span><span class="co">#&gt; Version: 0.1.0.9000</span></span>
-<span><span class="co">#&gt; License: GPL (&gt;= 3)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org" class="external-link">lubridate</a></span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+</h2>
+<div class="section level3">
+<h3 id="toy-data">Toy data<a class="anchor" aria-label="anchor" href="#toy-data"></a>
+</h3>
+<p>For our simulation, we will need historical weather data of multiple
+variables and geographic coordinates. Below, we load these datasets
+stored within the package.</p>
+<p>The data considered here is the meteorological dataset SAFRAN,
+developed by Météo-France. We only consider a small region in the south
+of France for the period 2017-2021. We consider 3 variables:
+precipitation, wind, and maximum temperature.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/data.html">data</a></span><span class="op">(</span><span class="st">"data"</span>, package <span class="op">=</span> <span class="st">"MSTWeatherGen"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/data.html">data</a></span><span class="op">(</span><span class="st">"coordinates"</span>, package <span class="op">=</span> <span class="st">"MSTWeatherGen"</span><span class="op">)</span></span>
+<span><span class="va">names</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Precipitation"</span>, <span class="st">"Wind"</span>, <span class="st">"Temp_max"</span><span class="op">)</span></span>
+<span><span class="va">dates</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2019-01-01"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-12-31"</span><span class="op">)</span>, by<span class="op">=</span><span class="st">"day"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="note-on-data-needed-for-mstweathergen">Note on data needed for <code>MSTWeatherGen</code><a class="anchor" aria-label="anchor" href="#note-on-data-needed-for-mstweathergen"></a>
+</h3>
+<p><code>MSTWeatherGen</code> is designed for multivariate and
+spatio-temporal weather generation. Therefore, the meteorological data
+to be used (here <code>data</code>) needs to be multiple variables (at
+least two variables) defined in a spatial domain (characterized by
+<code>coordinates</code>) and a temporal domain (defined by
+<code>dates</code>). Thus, the data needs to be in three dimensions
+(time<span class="math inline">\(\times\)</span>location<span class="math inline">\(\times\)</span>variable). Alongside the
+meteorological data, the user needs to provide a two column matrix of
+coordinates of each locations considered. Each row <code>i</code> of
+this matrix (<code>coordinates[i,]</code>) corresponds to the x and y
+coordinates of the datum <code>data[,i,]</code>. Finally, the user needs
+also to provide the time (<code>dates</code> here) corresponding to each
+point in the first dimension of <code>data</code>.</p>
+<p>Another important point about the meteorological data is the
+precipitation variable. Being a special variable in the estimation and
+simulation (as it has many zeros), if it is considered, it has to be the
+first variable in the meteorological data. If the user wants, one can
+also provide the names of the variables considered (here
+<code>names</code>).</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
+</h2>
+<p>With the data loaded, we proceed to estimate the parameters required
+for simulation. This involves determining weather types, computing
+transition probabilities between weather types, estimating the
+transformation functions of the variables into normal distribution, and
+finally estimating the parameters of the multivariate spatio-temporal
+covariance function, all using the <code>MSTWeatherGen.Estim</code>
+function.</p>
+<p>Before heading to the estimation, we will detail some important
+considerations that will help the user use the
+<code>MSTWeatherGen.Estim</code> function. First, if the data exhibit
+seasonality, it has to be handled somehow. Here, propose to treat each
+season separately meaning that the parameters of the model (weather
+types, transformation functions, and covariance function) are estimated
+at each season. The seasons are up to the user to define using the
+following format:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seasons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  s1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_day <span class="op">=</span> <span class="fl">1</span>, max_day <span class="op">=</span> <span class="fl">29</span>, min_month <span class="op">=</span> <span class="fl">12</span>, max_month <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  s2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_day <span class="op">=</span> <span class="fl">1</span>, max_day <span class="op">=</span> <span class="fl">31</span>, min_month <span class="op">=</span> <span class="fl">3</span>, max_month <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  s3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_day <span class="op">=</span> <span class="fl">1</span>, max_day <span class="op">=</span> <span class="fl">31</span>, min_month <span class="op">=</span> <span class="fl">6</span>, max_month <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>,</span>
+<span>  s4 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_day <span class="op">=</span> <span class="fl">1</span>, max_day <span class="op">=</span> <span class="fl">30</span>, min_month <span class="op">=</span> <span class="fl">9</span>, max_month <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>We can also provide the names of each season, to be used later for
+the validation plots:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">names_seasons</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DJF"</span>, <span class="st">"MAM"</span>, <span class="st">"JJA"</span>, <span class="st">"SON"</span><span class="op">)</span></span></code></pre></div>
+<p>If the considered data does not exhibit seasonality one can use the
+whole period to estimate the parameters. To do that, one needs to fix
+the argument <code>by_season</code> of the
+<code>MSTWeatherGen.Estim</code> as <code>False</code>.</p>
+<p>All the data being ready, we can now proceed to the estimation of the
+parameters using <code>MSTWeatherGen.Estim</code> function.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">names_weather_types</span> <span class="op">=</span> <span class="va">names</span></span>
+<span><span class="va">swg</span> <span class="op">=</span> <span class="fu"><a href="../reference/MSTWeatherGen_Estim.html">MSTWeatherGen_Estim</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, seasons <span class="op">=</span> <span class="va">seasons</span>,dates <span class="op">=</span> <span class="va">dates</span>, names <span class="op">=</span> <span class="va">names</span>, by_season <span class="op">=</span> <span class="cn">T</span>, scale <span class="op">=</span> <span class="cn">F</span>, </span>
+<span>                        precipitation <span class="op">=</span> <span class="cn">T</span>,names_weather_types <span class="op">=</span> <span class="va">names_weather_types</span>,</span>
+<span>                        coordinates<span class="op">=</span> <span class="va">coordinates</span>, max_it<span class="op">=</span><span class="fl">100</span>, tmax<span class="op">=</span><span class="fl">2</span>, n1<span class="op">=</span><span class="fl">5</span>, n2<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  ---Final iteration---  27 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  1889.788  -- Local Percent --  76.06813 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  43 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  349.0154  -- Local Percent --  45.08554 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  2 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  98.56867  -- Local Percent --  40.45814 % </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  -----Execution Time----- 2.818 </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  13 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  3178.887  -- Local Percent --  89.30184 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  377 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  224.2085  -- Local Percent --  22.84937 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  2 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  126.0287  -- Local Percent --  61.15596 % </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  -----Execution Time----- 3.793 </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  8 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  4972.702  -- Local Percent --  97.56218 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  50 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  244.1207  -- Local Percent --  37.01512 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  1 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  110.1677  -- Local Percent --  62.0465 % </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  </span></span>
+<span><span class="co">#&gt;   ++ Last 3-modes vs &lt;  0.1 % stopping this level and under ++ </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  -----Execution Time----- 2.525 </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  20 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  3497.352  -- Local Percent --  81.08983 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  23 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  484.9153  -- Local Percent --  53.94976 % </span></span>
+<span><span class="co">#&gt;  ---Final iteration---  1 </span></span>
+<span><span class="co">#&gt;  --Singular Value--  100.8238  -- Local Percent --  47.40579 % </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  </span></span>
+<span><span class="co">#&gt;   ++ Last 3-modes vs &lt;  0.1 % stopping this level and under ++ </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  -----Execution Time----- 2.435</span></span></code></pre></div>
+<p>Along the important arguments already defined (<code>data</code>,
+<code>seasons</code>, <code>by_season</code>, <code>dates</code>,
+<code>names</code>, <code>coordinates</code>), the user needs to define
+other arguments related to the estimation such as <code>max_it</code>
+which is the maximum iteration used by the <code>optim</code> function
+for the estimation of the covariance parameters, <code>tmax</code> which
+is the maximum time lag considered in the covariance estimation, and
+<code>n1</code> and <code>n2</code> which are related to the selection
+of the spatial pairs in the covariance estimation. Finally, the user
+needs to specify if the precipitation variable is considered using the
+<code>precipitation</code> argument. The
+<code>names_weather_types</code> is optional and it provides the names
+of the variables to be used for the weather types determination. If not
+provided, all the variables are used.</p>
+<p>Now that the estimation is done, which may take some time depending
+on the size of the data, we can use the estimated parameters (stored in
+<code>swg</code> object) for the simulation.</p>
+</div>
+<div class="section level2">
+<h2 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a>
+</h2>
+<p>Now, we’re ready to simulate weather data based on the estimated
+parameters. The simulation method used by <code>MSTWeatherGen</code> is
+based on the vector autoregressive (AR) model whose coefficients
+matrices can be calculated using the covariance parameters estimated
+using <code>MSTWeatherGen.Estim</code> function. Therefore, before
+running the simulation, the user needs to define the lag of the AR model
+<code>AR_lag</code> and then calculate the coefficient matrices using
+<code>calculate_AR_coefficients_matrices</code>. Note that choosing a
+higher value of <code>AR_lag</code> can be computationally challenging
+both in term of calculation and storage. Therefore, the choice of this
+parameters depends of the size of the spatial domain and the number of
+variables considered. Here we choose an AR of order 2 and fix
+<code>AR_lag</code> as 2.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">AR_lag</span> <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="va">bk</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_AR_coefficients_matrices.html">calculate_AR_coefficients_matrices</a></span><span class="op">(</span>parm <span class="op">=</span> <span class="va">swg</span>, coordinates <span class="op">=</span> <span class="va">coordinates</span>, AR_lag <span class="op">=</span> <span class="va">AR_lag</span><span class="op">)</span></span></code></pre></div>
+<p>After calculating the AR coefficient matrices, we can now ran the
+simulation using <code>MSTWeatherGen_Sim</code> function.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">=</span> <span class="fu"><a href="../reference/MSTWeatherGen_Sim.html">MSTWeatherGen_Sim</a></span><span class="op">(</span>dates_sim <span class="op">=</span> <span class="va">dates</span>, dates_original <span class="op">=</span> <span class="va">dates</span>, </span>
+<span>                                data <span class="op">=</span> <span class="va">data</span>, seasons <span class="op">=</span> <span class="va">seasons</span>, parm <span class="op">=</span> <span class="va">swg</span>, AR_lag <span class="op">=</span> <span class="va">AR_lag</span>, bk <span class="op">=</span> <span class="va">bk</span><span class="op">)</span></span></code></pre></div>
+<p>The object <code>sim</code> contains the simulated data in a 3D
+(time<span class="math inline">\(\times\)</span>location<span class="math inline">\(\times\)</span>variable) format (such as
+<code>data</code>) for the <code>dates_sim</code> dates.</p>
+</div>
+<div class="section level2">
+<h2 id="validation-plots">Validation plots<a class="anchor" aria-label="anchor" href="#validation-plots"></a>
+</h2>
+<p>Finally, to validate our simulation, we can compare the simulated
+data against our historical data. Here are some plots that help in
+assessing the accuracy and quality of the simulation.</p>
+<p>We first choose a location to use for validation.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Marseille</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">coordinates</span>, <span class="fl">1</span>, <span class="kw">function</span><span class="op">(</span><span class="va">point</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">point</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.37</span>, <span class="fl">43.2965</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>We can compare observed and simulated maximum temperature</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
+<span><span class="va">dates_to_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-01-01"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-12-31"</span><span class="op">)</span>, by<span class="op">=</span><span class="st">"day"</span><span class="op">)</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  Time <span class="op">=</span> <span class="va">dates</span><span class="op">[</span><span class="va">dates</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dates_to_plot</span><span class="op">]</span>,</span>
+<span>  Observed <span class="op">=</span> <span class="va">data</span><span class="op">[</span><span class="va">dates</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dates_to_plot</span>,<span class="va">Marseille</span> ,<span class="st">"Temp_max"</span><span class="op">]</span>, </span>
+<span>  Simulated <span class="op">=</span> <span class="va">sim</span><span class="op">[</span><span class="va">dates</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dates_to_plot</span>,<span class="va">Marseille</span> , <span class="st">"Temp_max"</span><span class="op">]</span> </span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">df_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="va">df</span>, cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Observed</span>, <span class="va">Simulated</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"Type"</span>, values_to <span class="op">=</span> <span class="st">"Value"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df_long</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Time</span>, y <span class="op">=</span> <span class="va">Value</span>, color <span class="op">=</span> <span class="va">Type</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Observed vs simulated maximum Temperature"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Time"</span>,</span>
+<span>       y <span class="op">=</span> <span class="st">"Value"</span>,</span>
+<span>       color <span class="op">=</span> <span class="st">"Type"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span><span class="st">""</span>,values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Observed"</span> <span class="op">=</span> <span class="st">"blue"</span>, <span class="st">"Simulated"</span> <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Custom colors</span></span></code></pre></div>
+<p><img src="MSTWeatherGen_files/figure-html/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>We now plot the observed empirical density versus simulated weather
+variables in Marseille during the seasons considered (winter (DJF),
+spring (MAM), summer (JJA), and fall (SON)) using
+<code>plot_observed_vs_simulated_density</code>function</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_observed_vs_simulated_density.html">plot_observed_vs_simulated_density</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">sim</span>, observed <span class="op">=</span> <span class="va">data</span>, dates <span class="op">=</span> <span class="va">dates</span>, </span>
+<span>                              seasons <span class="op">=</span> <span class="va">seasons</span>, location <span class="op">=</span> <span class="va">Marseille</span> , names <span class="op">=</span> <span class="va">names</span>, names_seasons <span class="op">=</span><span class="va">names_seasons</span><span class="op">)</span></span></code></pre></div>
+<p><img src="MSTWeatherGen_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>Next, we can compare the observed and simulated monthly variable
+means in Marseille using <code>plot_mean_by_month</code> function</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mean_by_month.html">plot_mean_by_month</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">sim</span>, observed <span class="op">=</span> <span class="va">data</span>,places <span class="op">=</span> <span class="va">Marseille</span> , names_places <span class="op">=</span> <span class="st">"Marseille "</span>, names <span class="op">=</span> <span class="va">names</span>, dates <span class="op">=</span> <span class="va">dates</span><span class="op">)</span></span></code></pre></div>
+<p><img src="MSTWeatherGen_files/figure-html/unnamed-chunk-12-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>Then, we can compare simulated and observed frequency of wet days in
+the considered area during the considered seasons</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_wet_frequency.html">plot_wet_frequency</a></span><span class="op">(</span><span class="va">sim</span>, <span class="va">data</span>, <span class="va">dates</span>, <span class="va">seasons</span>, <span class="va">coordinates</span>, <span class="va">names_seasons</span><span class="op">)</span></span></code></pre></div>
+<p><img src="MSTWeatherGen_files/figure-html/unnamed-chunk-13-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>Finally, we can see if our stochastic weather generator can reproduce
+the observed length of wet spells in the considered region using the
+<code>plot_dry_wet_spells_maps</code> function</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">id</span> <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fl">2018</span><span class="op">:</span><span class="fl">2021</span></span>
+<span><span class="fu"><a href="../reference/plot_dry_wet_spells_maps.html">plot_dry_wet_spells_maps</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">sim</span><span class="op">[</span><span class="va">id</span>,,<span class="op">]</span>, observed <span class="op">=</span> <span class="va">data</span><span class="op">[</span><span class="va">id</span>,,<span class="op">]</span>, coordinates <span class="op">=</span> <span class="va">coordinates</span>, dates <span class="op">=</span> <span class="va">dates</span><span class="op">[</span><span class="va">id</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p><img src="MSTWeatherGen_files/figure-html/unnamed-chunk-14-1.png" width="576" style="display: block; margin: auto;"></p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
@@ -152,7 +336,7 @@
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by <a href="http://sobakrim.github.io/" class="external-link">Saïd Obakrim</a>, <a href="https://jeff.biosp.org" class="external-link">Jean-François Rey</a>.</p>
+<p>Developed by <a href="http://sobakrim.github.io/" class="external-link">Said Obakrim</a>, <a href="https://jeff.biosp.org" class="external-link">Jean-François Rey</a>.</p>
 </div>
 
 <div class="pkgdown">

@@ -34,5 +34,5 @@ See [LICENSE](LICENSE) file.
 
 ## Authors
 
-Saïd Obakrim  
+Said Obakrim  
 Jean-François Rey  

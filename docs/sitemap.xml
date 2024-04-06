@@ -19,6 +19,63 @@
     <loc>https://github.com/sobakrim/MSTWeatherGen/index.html</loc>
   </url>
   <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/MSTWeatherGen-package.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/MSTWeatherGen_Estim.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/MSTWeatherGen_Estim_season.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/MSTWeatherGen_Sim.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/MSTWeatherGen_Sim_season.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/apply_inverse_transformations.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/assign_seasons.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/calculate_AR_coefficients_matrices.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/calculate_Bk_matrices.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/calculate_ICI.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/coordinates.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/cov_matrices.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/data.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/data_compression.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/ds.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/sobakrim/MSTWeatherGen/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/plot_dry_wet_spells_maps.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/plot_mean_by_month.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/plot_observed_vs_simulated_density.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/sobakrim/MSTWeatherGen/reference/plot_wet_frequency.html</loc>
   </url>
 </urlset>
