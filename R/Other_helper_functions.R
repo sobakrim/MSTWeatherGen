@@ -176,7 +176,9 @@ haversine <- function(point1, point2) {
 #' @keywords internal
 ds = function(i,j,coordinates) {
   return(geosphere::distHaversine(coordinates[i,], coordinates[j,])/1000)
+  #return(sqrt(rowSums((coordinates[i,]-coordinates[j,])^2)))
 }
+
 #' Calculate Insolation Clearness Index (ICI)
 #'
 #' Computes the Insolation Clearness Index (ICI) based on the provided radiation and time.

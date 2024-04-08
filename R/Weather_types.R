@@ -1,3 +1,4 @@
+
 #' Data Compression
 #'
 #' Function to compress data using the PTA3 method.
@@ -15,8 +16,7 @@ data_compression = function(data) {
   #   The compressed data 
   
   # Perform the PTA3 method on the data
-  pta = PTAk::PTA3(data, nbPT = 3, nbPT2 = 1, verbose = F)
-  
+  pta = PTAk::PTA3(data, nbPT = 3, nbPT2 = 1, verbose = FALSE)
   # Filter components based on the presence of a "*" at the beginning of their names
   out = !substr(pta[[3]]$vsnam, 1, 1) == "*"
   

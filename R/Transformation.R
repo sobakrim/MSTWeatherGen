@@ -303,7 +303,7 @@ orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
 #' @keywords internal
 scale_data <- function(data, names, dates, window_size = 30) {
 
-  if(length(unique(lubridate::year(dates))) > 4){
+  if(length(unique(lubridate::year(dates))) > 5){
     # Initialize scale parameters storage
     scale_parm <- list(mu = list(), sd = list())
     

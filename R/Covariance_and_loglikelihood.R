@@ -87,7 +87,8 @@ Gneiting <- function(h, u, par, dij) {
   
   A1 <- eij / muij
   A2 <- Matern(abs(h), r = (rij^2 / muij)^(1/2), v = vij) * exp(-aij * abs(u))
-  A3 <- ax * ((bii^(1/2) * bjj^(1/2)) / bij) * exp(-bij * abs(u))
+  A3 <- ax * ((a * abs(u))^(2*b) + 1)^(-c)
+    #((bii^(1/2) * bjj^(1/2)) / bij) * exp(-bij * abs(u))
   
   return(A1 * A2 + A3)
 }
