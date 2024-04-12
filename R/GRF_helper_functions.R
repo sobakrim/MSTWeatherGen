@@ -38,21 +38,21 @@ generate_variable_index_pairs <- function(names) {
 initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax, cr) {
   # Initialize the `par_all` vector if it is missing, with default values or using `par_s`
   if (is.null(par_all)) {
-    names_par_all <- c(paste(pairs, "dij", sep = ":"), "a", "b", "c", "d", "e", paste(names, "ci", sep = ":"),
-                       paste(pairs, "aij", sep = ":"), paste(pairs, "bij", sep = ":"),
+    names_par_all <- c(paste(pairs, "dij", sep = ":"), "a1", "d1", "g1", "a2", "d2", "g2",
+                       "b1", "e1", "l1", "b2", "e2", "l2", "c", "f", "m",
+                       paste(names, "ai", sep = ":"), paste(names, "bi", sep = ":"),
+                       paste(names, "ci", sep = ":"),
                        paste(pairs, "rij", sep = ":"), paste(pairs, "vij", sep = ":"), 
                        paste(pairs, "ax", sep = ":"))
     
-    par_all <- setNames(rep(1, length(names_par_all)), names_par_all)
+    par_all <- setNames(rep(0.1, length(names_par_all)), names_par_all)
     
     par_all[paste(pairs, "dij", sep = ":")] = 1
-    par_all[paste(pairs, "bij", sep = ":")] = 1
-    par_all[paste(names, "ci", sep = ":")] = 0
-    par_all[paste(pairs[1:length(names)], "rij", sep = ":")] <- 1#par_s[1,] 
-    par_all[paste(pairs[1:length(names)], "vij", sep = ":")] <- 1#par_s[2,] 
+    par_all[paste(pairs[1:length(names)], "rij", sep = ":")] <- par_s[1,] 
+    par_all[paste(pairs[1:length(names)], "vij", sep = ":")] <- par_s[2,] 
     par_all[paste(pairs, "ax", sep = ":")] <- 0
-    parms <- c("a","b","c","d","e",paste(pairs, "aij", sep = ":"))
-    par_all[parms] <- c(0.1, 0.1, 0.1, 0.1,0.1,rep(1, length(pairs)))
+    parms <- c("a1", "a2", "d1", "d2", "g1", "g2")
+    par_all[parms] <-rep(1, length(parms))
   }
   
   # Update ax parameters based on covariance information
@@ -63,8 +63,8 @@ initialize_par_all_if_missing <- function(par_all, names, pairs, par_s, ax, cr) 
   ch <- try(chol(beta), silent = T)
   if(is.character(ch)){
     par_s <- matrix(rep(1, length(names)^2), ncol = length(names), nrow= length(names))
-    par_all[paste(pairs[1:length(names)], "rij", sep = ":")] <- par_s[1,] 
-    par_all[paste(pairs[1:length(names)], "vij", sep = ":")] <- par_s[2,] 
+    par_all[paste(pairs[1:length(names)], "rij", sep = ":")] <- 1
+    par_all[paste(pairs[1:length(names)], "vij", sep = ":")] <- 1
     par_all <- update_ax_parameters(par_all, names, ax)
   } 
   return(par_all)
@@ -98,6 +98,8 @@ update_ax_parameters <- function(par_all, names, ax) {
       })
     })
     ax = Matrix::nearPD(a)$mat
+  }else{
+    ax = Matrix::nearPD(ax)$mat
   }
   colnames(ax) = rownames(ax) = names
   for (v1 in names) {
@@ -150,13 +152,13 @@ init_space_par <- function(data, names, h, uh, max_it = 2000) {
   # Perform parallel optimization for each variable using mclapply
   par = parallel::mclapply(names, function(v) {
     optim(
-      par = c(1, 0.1),  # Initial parameter guesses
+      par = c(1, 1),  # Initial parameter guesses
       fn = loglik_spatial,     # Objective function to minimize (negative log-likelihood)
       data = data,
       v = v,            # Current variable being optimized
       h = h,
       uh = uh,
-      control = list(maxit = max_it)  # Optimization control settings
+      control = list(maxit = max_it, trace = 2)  # Optimization control settings
     )$par  # Extract the optimized parameters
   })
   
@@ -187,32 +189,17 @@ init_space_par <- function(data, names, h, uh, max_it = 2000) {
 #'
 #' @keywords internal
 #' @importFrom stringr str_split
-optimize_pairs_spatial <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
+optimize_spatial_parameters <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   pairs <- paste(ep[,1],ep[,2], sep = "-")
-  
-  # Optimize model parameters for each pair of variables using the log-likelihood function
-  for (i in seq(nrow(ep))) {
-    pair <- pairs[i]
-    sp <- unlist(stringr::str_split(pair, "-"))
-    if (sp[1] == sp[2]) {
-      parms <- c(paste(pair, "rij", sep = ":"),paste(pair, "ax", sep = ":"),
-                 paste(pair, "vij", sep = ":"))
-      par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data=data, pair = pair, parms = parms,
-                              par_all = par_all,ep = ep,
-                              names = names, 
-                              Vi = Vi, uh = uh[uh[,1]==0,], cr = cr,
-                              control = list(maxit = max_it))$par
-    } else {
-      parms <- c(paste(pair, "ax", sep = ":"))
-      par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data=data, pair = pair, parms = parms,
-                              par_all = par_all,ep = ep,
-                              names = names, 
-                              Vi = Vi, uh = uh[uh[,1]==0,], cr = cr,
-                              control = list(maxit = max_it))$par   
-    }
-    
-  }
-  return(par_all)
+  parms <- c(paste(pairs, "ax", sep = ":"), paste(names, "ci", sep = ":"),
+             paste(pairs[1:length(names)], "rij", sep = ":"), 
+             paste(pairs[1:length(names)], "vij", sep = ":"))
+  optimized_par <- optim(par_all[parms], fn = loglik, data = data, parms = parms,
+                         par_all = par_all, ep = ep, names = names, 
+                         Vi = Vi, uh = uh, cr = cr, 
+                         control = list(maxit = max_it))$par
+  par_all[parms] <- optimized_par
+  return(update_ax_parameters(par_all, names, compute_ax(param(par_all, names), names)))
 }
 #' Optimize Spatio-Temporal Parameters for Variable Pairs
 #'
@@ -250,8 +237,9 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
     pair <- pairs[i]
     sp <- unlist(stringr::str_split(pair, "-"))
     if (sp[1] == sp[2]) {
-      parms <- c(paste(sp[1], "ci", sep = ":"),paste(sp[2], "ci", sep = ":"),paste(pair, "ax", sep = ":"),
-                paste(pair, "bij", sep = ":"), paste(pair, "aij", sep = ":"),
+      parms <- c(paste(sp[1], "ci", sep = ":"),paste(sp[2], "ci", sep = ":"),
+                 paste(sp[1], "ai", sep = ":"),paste(sp[2], "ai", sep = ":"),
+                 paste(pair, "ax", sep = ":"),
                 paste(pair, "rij", sep = ":"),paste(pair, "vij", sep = ":"))
       par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data = data, pair = pair, parms = parms,
                               par_all = par_all, ep = ep, names = names, 
@@ -260,9 +248,9 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
     }else{
       pair <- paste(ep[i,1],ep[i,1], sep = "-")
       parms <- c(paste(sp[1], "ci", sep = ":"),paste(sp[2], "ci", sep = ":"),
-                paste(pair, "bij", sep = ":"), paste(pair, "aij", sep = ":"))
-      pair <- paste(ep[i,2],ep[i,2], sep = "-")
-      parms <- c(parms, paste(pair, "bij", sep = ":"), paste(pair, "aij", sep = ":"))
+                 paste(sp[1], "ai", sep = ":"),paste(sp[2], "ai", sep = ":"))
+      #pair <- paste(ep[i,2],ep[i,2], sep = "-")
+      #parms <- c(parms, paste(pair, "aij", sep = ":"))
       par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data = data, pair = pairs[i], parms = parms,
                               par_all = par_all, ep = ep, names = names, 
                               Vi = Vi, uh = uh, cr = cr,
@@ -303,7 +291,10 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
 #' @keywords internal
 optimize_temporal_parameters <- function(par_all, data, names, Vi, uh, cr, max_it, ep) {
   # Final optimization step for the subset of parameters across all variable pairs
-  parms <- c("a", "b", "c", "d", "e")
+  parms <- c("a1", "d1", "g1", "a2", "d2", "g2",
+             "b1", "e1", "l1", "b2", "e2", "l2", "c", "f", "m",
+             paste(names, "ai", sep = ":"), paste(names, "bi", sep = ":"),
+             paste(names, "ci", sep = ":"))
   optimized_par <- optim(par_all[parms], fn = loglik, data = data, parms = parms,
                          par_all = par_all, ep = ep, names = names, 
                          Vi = Vi, uh = uh, cr = cr, 
@@ -365,7 +356,7 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   Nv <- dim(data)[3]  # Number of variables
   
   # Generate spatial, temporal, and variable index pairs
-  Si <- generate_spatial_index_pairs(coordinates, n1, n2)
+  Si <- generate_spatial_index_pairs(coordinates, n1=n1, n2=n2)
   Ti <- generate_temporal_index_pairs(wt_id, dates, tmax)
   Vi <- generate_variable_index_pairs(names)
   
@@ -387,26 +378,25 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
   
   # Check and initialize par_all if missing
   par_all <- initialize_par_all_if_missing(par_all, names, pairs, par_s, ax, cr = cr)
-
+  
+  par_all <- optimize_spatial_parameters(par_all, data, names, Vi, uh[uh[,1]==0,], cr, max_it, ep)
   
   for (v in 1:2) {
-    # Optimize spatial parameters for each pair
-    par_all <- optimize_pairs_spatial(par_all, data, names, Vi, uh, cr, max_it, ep)
-    
     # Optimize temporal parameters
     par_all <- optimize_temporal_parameters(par_all, data, names, Vi, uh, cr, max_it, ep)
-
-    # Optimize spatiotemporal parameters for each pair
-    par_all <- optimize_pairs_spatiotemporal(par_all, data, names, Vi, uh, cr, max_it, ep)
+    # Optimize spatial parameters
+    par_all <- optimize_spatial_parameters(par_all, data, names, Vi, uh, cr, max_it, ep)
   }
   
   # Construct parameter and beta matrices
+  par_all <- update_ax_parameters(par_all, names, compute_ax(param(par_all, names), names))
   parm <- param(par_all, names)
   beta <- compute_beta(parm, names, cr)
   beta <- sapply(1:nrow(ep), function(i) beta[ep[i,1], ep[i,2]])
   par_all[1:length(beta)] <- beta
+  parm <- param(par_all, names)
   
-  return(list(parm = param(par_all,names), par_all = par_all))
+  return(list(parm = parm, par_all = par_all))
 }
 
 #' Select Uniformly Distributed Points Indices
