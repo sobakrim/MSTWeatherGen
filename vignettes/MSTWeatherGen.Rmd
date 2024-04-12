@@ -29,7 +29,6 @@ First, let's load the `MSTWeatherGen` package.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(MSTWeatherGen)
-library(lubridate)
 ```
 
 ## Data
@@ -44,7 +43,7 @@ The data considered here is the meteorological dataset SAFRAN, developed by Mét
 data("data", package = "MSTWeatherGen")
 data("coordinates", package = "MSTWeatherGen")
 names = c("Precipitation", "Wind", "Temp_max")
-dates = seq(as.Date("2019-01-01"),as.Date("2021-12-31"), by="day")
+dates = seq(as.Date("2018-01-01"),as.Date("2021-12-31"), by="day")
 ```
 
 ### Note on data needed for `MSTWeatherGen`
@@ -55,9 +54,9 @@ Another important point about the meteorological data is the precipitation varia
 
 ## Estimation
 
-With the data loaded, we proceed to estimate the parameters required for simulation. This involves determining weather types, computing transition probabilities between weather types, estimating the transformation functions of the variables into normal distribution, and finally estimating the parameters of the multivariate spatio-temporal covariance function, all using the `MSTWeatherGen.Estim` function.
+With the data loaded, we proceed to estimate the parameters required for simulation. This involves determining weather types, computing transition probabilities between weather types, estimating the transformation functions of the variables into normal distribution, and finally estimating the parameters of the multivariate spatio-temporal covariance function, all using the `MSTWeatherGen_Estim` function.
 
-Before heading to the estimation, we will detail some important considerations that will help the user use the `MSTWeatherGen.Estim` function. First, if the data exhibit seasonality, it has to be handled somehow. Here, propose to treat each season separately meaning that the parameters of the model (weather types, transformation functions, and covariance function) are estimated at each season. The seasons are up to the user to define using the following format:
+Before heading to the estimation, we will detail some important considerations that will help the user use the `MSTWeatherGen_Estim` function. First, if the data exhibit seasonality, it has to be handled somehow. Here, propose to treat each season separately meaning that the parameters of the model (weather types, transformation functions, and covariance function) are estimated at each season. The seasons are up to the user to define using the following format:
 
 ```{r echo=TRUE}
 seasons <- list(
@@ -74,15 +73,15 @@ We can also provide the names of each season, to be used later for the validatio
 names_seasons = c("DJF", "MAM", "JJA", "SON")
 ```
 
-If the considered data does not exhibit seasonality one can use the whole period to estimate the parameters. To do that, one needs to fix the argument `by_season` of the `MSTWeatherGen.Estim` as `False`.
+If the considered data does not exhibit seasonality one can use the whole period to estimate the parameters. To do that, one needs to fix the argument `by_season` of the `MSTWeatherGen_Estim` as `False`.
 
-All the data being ready, we can now proceed to the estimation of the parameters using `MSTWeatherGen.Estim` function.
+All the data being ready, we can now proceed to the estimation of the parameters using `MSTWeatherGen_Estim` function.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 names_weather_types = names
-swg = MSTWeatherGen_Estim(data = data, seasons = seasons,dates = dates, names = names, by_season = T, scale = F, 
+swg = MSTWeatherGen_Estim(data = data, seasons = seasons,dates = dates, names = names, by_season = T, scale = T, 
                         precipitation = T,names_weather_types = names_weather_types,
-                        coordinates= coordinates, max_it=100, tmax=2, n1=5, n2=5)
+                        coordinates= coordinates, max_it=100, tmax=1, n1=3, n2=3)
 ```
 
 Along the important arguments already defined (`data`, `seasons`, `by_season`, `dates`, `names`, `coordinates`), the user needs to define other arguments related to the estimation such as `max_it` which is the maximum iteration used by the `optim` function for the estimation of the covariance parameters, `tmax` which is the maximum time lag considered in the covariance estimation, and `n1` and `n2` which are related to the selection of the spatial pairs in the covariance estimation. Finally, the user needs to specify if the precipitation variable is considered using the `precipitation` argument. The `names_weather_types` is optional and it provides the names of the variables to be used for the weather types determination. If not provided, all the variables are used.
@@ -91,10 +90,10 @@ Now that the estimation is done, which may take some time depending on the size 
 
 ## Simulation
 
-Now, we're ready to simulate weather data based on the estimated parameters. The simulation method used by `MSTWeatherGen` is based on the vector autoregressive (AR) model whose coefficients matrices can be calculated using the covariance parameters estimated using `MSTWeatherGen.Estim` function. Therefore, before running the simulation, the user needs to define the lag of the AR model `AR_lag` and then calculate the coefficient matrices using `calculate_AR_coefficients_matrices`. Note that choosing a higher value of `AR_lag` can be computationally challenging both in term of calculation and storage. Therefore, the choice of this parameters depends of the size of the spatial domain and the number of variables considered. Here we choose an AR of order 2 and fix `AR_lag` as 2.
+Now, we're ready to simulate weather data based on the estimated parameters. The simulation method used by `MSTWeatherGen` is based on the vector autoregressive (AR) model whose coefficients matrices can be calculated using the covariance parameters estimated using `MSTWeatherGen_Estim` function. Therefore, before running the simulation, the user needs to define the lag of the AR model `AR_lag` and then calculate the coefficient matrices using `calculate_AR_coefficients_matrices`. Note that choosing a higher value of `AR_lag` can be computationally challenging both in term of calculation and storage. Therefore, the choice of this parameters depends of the size of the spatial domain and the number of variables considered. Here we choose an AR of order 2 and fix `AR_lag` as 2.
 
 ```{r echo=TRUE}
-AR_lag = 2
+AR_lag = 1
 bk = calculate_AR_coefficients_matrices(parm = swg, coordinates = coordinates, AR_lag = AR_lag)
 ```
 
@@ -121,33 +120,34 @@ Marseille  <- which.min(apply(coordinates, 1, function(point) {
 
 We can compare observed and simulated maximum temperature
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 7, fig.align = "center"}
 library(ggplot2)
-library(tidyr)
 dates_to_plot <- seq(as.Date("2021-01-01"),as.Date("2021-12-31"), by="day")
 df <- data.frame(
   Time = dates[dates %in% dates_to_plot],
   Observed = data[dates %in% dates_to_plot,Marseille ,"Temp_max"], 
   Simulated = sim[dates %in% dates_to_plot,Marseille , "Temp_max"] 
 )
-
-df_long <- pivot_longer(df, cols = c(Observed, Simulated), names_to = "Type", values_to = "Value")
-
-ggplot(df_long, aes(x = Time, y = Value, color = Type)) +
-  geom_line() +
-  theme_minimal() +
-  labs(title = "Observed vs simulated maximum Temperature",
+df_long <- data.frame(
+  Time = rep(df$Time, 2),
+  Type = rep(c("Observed", "Simulated"), each = nrow(df)),
+  Value = c(df$Observed, df$Simulated)
+)
+ggplot2::ggplot(df_long, ggplot2::aes(x = Time, y = Value, color = Type)) +
+  ggplot2::geom_line() +
+  ggplot2::theme_minimal() +
+  ggplot2::labs(title = "Observed vs simulated maximum Temperature",
        x = "Time",
        y = "Value",
-       color = "Type") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_color_manual("",values = c("Observed" = "blue", "Simulated" = "red")) # Custom colors
+       color = "Type") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::scale_color_manual("",values = c("Observed" = "blue", "Simulated" = "red")) 
 ```
 
 
 
 We now plot the observed empirical density versus simulated weather variables in Marseille  during the seasons considered (winter (DJF), spring (MAM), summer (JJA), and fall (SON)) using `plot_observed_vs_simulated_density`function
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 4, fig.width = 7.5, fig.align = "center"}
 plot_observed_vs_simulated_density(sim = sim, observed = data, dates = dates, 
                               seasons = seasons, location = Marseille , names = names, names_seasons =names_seasons)
 
@@ -155,19 +155,20 @@ plot_observed_vs_simulated_density(sim = sim, observed = data, dates = dates,
 
 Next, we can compare the observed and simulated monthly variable means in Marseille  using `plot_mean_by_month` function
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 4, fig.width = 7, fig.align = "center"}
 plot_mean_by_month(sim = sim, observed = data,places = Marseille , names_places = "Marseille ", names = names, dates = dates)
 ```
 
 Then, we can compare simulated and observed frequency of wet days in the considered area during the considered seasons
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 4, fig.width = 7, fig.align = "center"}
 plot_wet_frequency(sim, data, dates, seasons, coordinates, names_seasons)
 ```
 
 Finally, we can see if our stochastic weather generator can reproduce the observed length of wet spells in the considered region using the `plot_dry_wet_spells_maps` function
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 6, fig.align = "center"}
-id = lubridate::year(dates) %in% 2018:2021
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 7, fig.align = "center"}
+library(lubridate)
+id = lubridate::year(dates) %in% 2016:2021
 plot_dry_wet_spells_maps(sim = sim[id,,], observed = data[id,,], coordinates = coordinates, dates = dates[id])
 ```

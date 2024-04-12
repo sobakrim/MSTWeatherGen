@@ -10,7 +10,7 @@
 #' @importFrom Matrix chol2inv
 #'
 #' @keywords internal
-calculate_Bk_matrices <- function(C_k_matrices) {
+calculate_Bk_matrices <- function(C_k_matrices, Bk_0) {
   # Function for calculating coefficients matrices (Bk) for an autoregressive (AR) model
   # using lagged covariance matrices (C_k_matrices).
   #
@@ -56,8 +56,8 @@ calculate_Bk_matrices <- function(C_k_matrices) {
   for (i in 1:M) {
     Bk_0_rhs <- Bk_0_rhs - Bk_matrices_list[[i]] %*% C_k_matrices[[i + 1]]  # Adjust for contributions from Bk_i matrices
   }
-  Bk_0 <- t(chol(Bk_0_rhs)) # Perform Cholesky decomposition to obtain Bk_0
-  
+  Bk_0 <- try(t(chol(Bk_0_rhs)), silent = T) # Perform Cholesky decomposition to obtain Bk_0
+  if(is.character(Bk_0)) Bk_0 = Bk_0
   Bk_matrices_list <- list(Bk_0 = Bk_0, bk = Bk_matrices_list)
   
   return(Bk_matrices_list)
@@ -89,11 +89,23 @@ calculate_AR_coefficients_matrices <- function(parm, coordinates, AR_lag){
     bk = lapply(1:K, function(k){
       cova = cov_matrices(par = parm$swg[[s]]$gf_par[[k]], coordinates = coordinates, 
                          names = names, M = AR_lag)
-      bk = calculate_Bk_matrices(cova)
+      bk = try(calculate_Bk_matrices(cova), silent = T)
       return(list(bk = bk, cov0 = cova[[1]]))
     })
     return(bk)
   })
+  for(s in 1:length(parm$swg)){
+    K = length(parm$swg[[s]]$gf_par)
+    for(k in 1:K){
+      j = k-1
+      while (is.character(bk[[s]][[k]]$bk$Bk_0)) {
+        bk[[s]][[k]]$bk$Bk_0 = try(bk[[s]][[j]]$bk$Bk_0, silent = T)
+        bk[[s]][[k]]$bk$bk = list(try(bk[[s]][[j]]$bk$Bk, silent = T))
+        bk[[s]][[k]]$cov0 = try(bk[[s]][[k]]$cov0, silent = T)
+        j = k+1
+      }
+    }
+  }
   return(bk)
 }
 #' Simulate AR Process

@@ -55,39 +55,48 @@ Gneiting <- function(h, u, par, dij) {
   if(!is.numeric(par)) par <- as.numeric(par)
   
   # Unpack parameters from the 'par' vector for clarity.
-  a <- par[1]
-  b <- par[2]
-  c <- par[3]
-  d <- par[4]
-  e <- par[5]
-  ci <- par[6]
-  cj <- par[7]
-  rii <- par[12]
-  rjj <- par[13]
-  vii <- par[14]
-  vjj <- par[15]
-  ax <- par[16]
-  aii <- par[17]
-  ajj <- par[18]
-  bii <- par[19]
-  bjj <- par[20]
+  a1 <- par[1]
+  d1 <- par[2]
+  g1 <- par[3]
+  a2 <- par[4]
+  d2 <- par[5]
+  g2 <- par[6]
+  b1 <- par[7]
+  e1 <- par[8]
+  l1 <- par[9]
+  b2 <- par[10]
+  e2 <- par[11]
+  l2 <- par[12]
+  c <- par[13]
+  f <- par[14]
+  m <- par[15]
+  ai <- par[16]
+  aj <- par[17]
+  bi <- par[18]
+  bj <- par[19]
+  ci <- par[20]
+  cj <- par[21]
+  rii <- par[22]
+  rjj <- par[23]
+  vii <- par[24]
+  vjj <- par[25]
+  ax <- par[26]
   
   # Calculated intermediate parameters for the covariance calculation.
   vij <- (vii + vjj) / 2
   rij <- sqrt((rii^2 + rjj^2) / 2)
-  aij <- sqrt((aii^2 + ajj^2) / 2)
-  bij <- sqrt((bii^2 + bjj^2) / 2)
   
-  eij <- dij *((rii^vii * rjj^vjj) / rij^(2*vij)) * exp((1/2)*vii)* exp((1/2)*vjj) / exp(vij) * 
+  eij <- dij * ((rii^vii * rjj^vjj) / rij^(2*vij)) * 
     (gamma(vij) / (gamma(vii)^(1/2) * gamma(vjj)^(1/2))) * 
-    sqrt((1-ci^2)*(1-cj^2)) * 
-    (aii^(1/2) * ajj^(1/2)) / aij
+    sqrt((1-ai^2)*(1-aj^2)) * sqrt((1-bi^2)*(1-bj^2))
   
-  muij <- ((a * abs(u))^(2*b) + 1)^c - (ci*cj * ((d * abs(u))^(2*e) + 1)^(-c)) 
+  muij <- (((a1 * abs(u))^(2*b1) + 1)^(c) - (ai*aj * ((a2 * abs(u))^(2*b2) + 1)^(-c))) 
+  rhoij <- 1 / (((d1 * abs(u))^(2*e1) + 1)^(f) - (bi*bj * ((d2 * abs(u))^(2*e2) + 1)^(-f)))
   
   A1 <- eij / muij
-  A2 <- Matern(abs(h), r = (rij^2 / muij)^(1/2), v = vij) * exp(-aij * abs(u))
-  A3 <- ax * ((bii^(1/2) * bjj^(1/2)) / bij) * exp(-bij * abs(u))
+  A2 <- Matern(abs(h), r = (rij^2 / muij)^(1/2), v = vij) * rhoij
+  
+  A3 <- ax * 1 / (((g1 * abs(u))^(2*l1) + 1)^(m) - ci*cj * ((g2 * abs(u))^(2*l2) + 1)^(-m))
   
   return(A1 * A2 + A3)
 }
@@ -125,23 +134,32 @@ param <- function(par, names) {
   u <- data.frame(v1 = ep$v1, v2 = ep$v2, stringsAsFactors = FALSE)
   
   # Assign common temporal parameters to all pairs
-  u$a <- par["a"]
-  u$b <- par["b"]
+  u$a1 <- par["a1"]
+  u$d1 <- par["d1"]
+  u$g1 <- par["g1"]
+  u$a2 <- par["a2"]
+  u$d2 <- par["d2"]
+  u$g2 <- par["g2"]
+  u$b1 <- par["b1"]
+  u$e1 <- par["e1"]
+  u$l1 <- par["l1"]
+  u$b2 <- par["b2"]
+  u$e2 <- par["e2"]
+  u$l2 <- par["l2"]
   u$c <- par["c"]
-  u$d <- par["d"]
-  u$e <- par["e"]
-  
+  u$f <- par["f"]
+  u$m <- par["m"]
   # Loop through each pair to populate the data frame with corresponding parameter values
   for (i in seq_len(J)) {
     # Extract and assign specific parameters for each pair based on naming convention
+    u$ai[i] <- par[paste(u$v1[i],  "ai", sep = ":")]
+    u$aj[i] <- par[paste(u$v2[i],  "ai", sep = ":")]
+    
+    u$bi[i] <- par[paste(u$v1[i],  "bi", sep = ":")]
+    u$bj[i] <- par[paste(u$v2[i],  "bi", sep = ":")]
+    
     u$ci[i] <- par[paste(u$v1[i],  "ci", sep = ":")]
     u$cj[i] <- par[paste(u$v2[i],  "ci", sep = ":")]
-    
-    u$aij[i] <- par[paste(paste(u$v1[i],u$v2[i],  sep = "-"),  "aij", sep = ":")]
-    u$bij[i] <- par[paste(paste(u$v1[i],u$v2[i],  sep = "-"),  "bij", sep = ":")]
-    
-    u$rij[i] <- par[paste(paste(u$v1[i],u$v2[i],  sep = "-"),  "rij", sep = ":")]
-    u$vij[i] <- par[paste(paste(u$v1[i],u$v2[i],  sep = "-"),  "vij", sep = ":")]
     
     u$rii[i] <- par[paste(paste(u$v1[i],u$v1[i],  sep = "-"),  "rij", sep = ":")]
     u$rjj[i] <- par[paste(paste(u$v2[i],u$v2[i],  sep = "-"),  "rij", sep = ":")]
@@ -150,11 +168,6 @@ param <- function(par, names) {
     u$vjj[i] <- par[paste(paste(u$v2[i],u$v2[i],  sep = "-"),  "vij", sep = ":")]
     
     u$ax[i] <- par[paste(paste(u$v1[i],u$v2[i],  sep = "-"),  "ax", sep = ":")]
-    u$aii[i] <- par[paste(paste(u$v1[i],u$v1[i],  sep = "-"),  "aij", sep = ":")]
-    u$ajj[i] <- par[paste(paste(u$v2[i],u$v2[i],  sep = "-"),  "aij", sep = ":")]
-    
-    u$bii[i] <- par[paste(paste(u$v1[i],u$v1[i],  sep = "-"),  "bij", sep = ":")]
-    u$bjj[i] <- par[paste(paste(u$v2[i],u$v2[i],  sep = "-"),  "bij", sep = ":")]
     
     u$dij[i] <- par[paste(paste(u$v1[i],u$v2[i],  sep = "-"),  "dij", sep = ":")]
   }
@@ -173,6 +186,7 @@ param <- function(par, names) {
 #' @importFrom Matrix nearPD
 #' @keywords internal
 #' @noRd
+
 compute_beta <- function(parm, names, cr) {
   # Function for calculating correlations (dij) based on the Gneiting function
   
@@ -206,7 +220,7 @@ compute_beta <- function(parm, names, cr) {
     sapply(names, function(v2){
       par <- get_parameters(v1, v2)
       if(any(is.na(par))) par <- get_parameters(v2, v1)
-      return(par[16] * (par[19]^(1/2) * par[20]^(1/2)) / sqrt((par[19]^2 + par[20]^2) / 2))
+      return(par[26]/ (1 - par[20] * par[21]))
     })
   })
   cr = Matrix::nearPD(cr-ax)$mat
@@ -219,7 +233,7 @@ compute_beta <- function(parm, names, cr) {
       
       # Calculate the correlation coefficient using the Gneiting function and correction term
       cc = Gneiting(0, 0, par, dij = 1)  # Gneiting function calculation for the pair
-      ax = par[16] * (par[19]^(1/2) * par[20]^(1/2)) / sqrt((par[19]^2 + par[20]^2) / 2)  # Correction term calculation
+      ax = par[26] / (1 - par[20] * par[21]) # Correction term calculation
       beta_val <- (cr[v1, v2]) / (cc - ax)  # Adjusted correlation coefficient
       
       beta[v1, v2] <- beta[v2, v1] <- beta_val  # Symmetric assignment to ensure the matrix is symmetric
@@ -334,20 +348,14 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
   
   # Update and compute model parameters
   parm <- param(par, names)
+  ax <- Matrix::nearPD(compute_ax(parm, names))$mat  # Compute ax correction terms
   beta <- try(compute_beta(parm, names, cr), silent = T)  # Compute beta coefficients
-  ax <- compute_ax(parm, names)  # Compute ax correction terms
   
-  if(!is.character(beta)){
-    parm <- modify_beta_parm(parm, beta)
-    condition <- pd_condition(parm,names)
-  }else{
-    condition <- FALSE
-  }
   # Attempt Cholesky decompositions for 'ax' and 'beta', checking for positive definiteness
   ae <- try(chol(ax), silent = TRUE)
   be <- try(chol(beta), silent = TRUE)
   
-  if (condition & !is.character(be) & (!is.character(ae) | length(which(ax == 0)) == length(names)^2)) {
+  if (!is.character(be) & (!is.character(ae) )) {
     # Proceed if both 'ax' and 'beta' matrices are valid for further computations
     
     # Map parameters to each variable pair in 'Vi'
@@ -362,7 +370,7 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
     par = parmm[[v]]  # Parameters for the current pair
     
     # Parameter constraints check; return a large value if constraints are violated
-    if (any(par[c(1:15,17:20)] < 0) | any(par[c(2,3,5,6,7)] > 1)) {
+    if (any(par[c(1:21,23:24)] < 0) | any(par[c(2,3,5,7:13)] > 1)) {
       return(abs(rnorm(1)) * 1e+20)
     } else {
       # Compute covariance for the pair
@@ -461,32 +469,21 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
   # Returns:
   #   The total log-likelihood value for the data based on the current set of parameters.
   
-
+  
   J = length(names)  # Number of variables in the analysis.
   pairs = paste(ep[,1], ep[,2], sep = "-")  # Construct pairs from 'ep' for parameter naming.
   
-  # Update parameter names and values based on current estimates.
-  names(par_all) <- c(paste(pairs, "dij", sep = ":"), "a", "b", "c", "d", "e", 
-                      paste(names, "ci", sep = ":"), paste(pairs, "aij", sep = ":"),
-                      paste(pairs, "bij", sep = ":"), paste(pairs, "rij", sep = ":"),
-                      paste(pairs, "vij", sep = ":"), paste(pairs, "ax", sep = ":"))
   par_all[parms] = par  # Update specified parameters.
   
-  par = par_all  # Use updated parameters for calculations.
-  parm = param(par, names)  # Organize parameters for each pair.
+  parm <- param(par_all, names)
+  #ax <- Matrix::nearPD(compute_ax(parm, names))$mat  # Compute ax correction terms
+  parm <- param(update_ax_parameters(par_all, names, compute_ax(parm, names)), names)
   beta <- try(compute_beta(parm, names, cr), silent = T)  # Compute beta coefficients
-  ax = compute_ax(parm, names)  # Compute ax correction terms matrix.
-  if(!is.character(beta)){
-    parm <- modify_beta_parm(parm, beta)
-    condition <- pd_condition(parm,names)
-  }else{
-    condition <- FALSE
-  }  
   # Attempt Cholesky decomposition to ensure positive definiteness.
-  ae <- try(chol(ax), silent = TRUE)
+  #ae <- try(chol(ax), silent = TRUE)
   be <- try(chol(beta), silent = TRUE)
   
-  if (condition & !is.character(be) & (!is.character(ae) | length(which(ax == 0)) == length(names)^2)) {
+  if (!is.character(be)) {
     # Proceed if both 'ax' and 'beta' matrices are valid for further computations.
     
     # Map parameters to each variable pair in 'Vi'.
@@ -501,9 +498,8 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
       # Initialize log-likelihood components for the current pair.
       l1 = l2 = l3 = l4 = 0
       par = parmm[[v]]  # Parameters for the current pair.
-      
       # Validate parameter constraints; return a large penalty if violated.
-      if (any(par[c(1:15,17:20)] < 0) | any(par[c(2,3,5,6,7)] > 1)) {
+      if (any(par[c(1:25)] < 0) | any(par[c(7:21)] > 1)) {
         return(-abs(rnorm(1)) * 1e+20)
       } else {
         # Calculate pairwise log-likelihood using Gneiting function and parameter adjustments.
@@ -810,11 +806,10 @@ pd_condition = function(parm, names){
       rij <- sqrt((rii^2 + rjj^2) / 2)
       aij <- sqrt((aii^2 + ajj^2) / 2)
       
-      eij <- dij *((rii^vii * rjj^vjj) / rij^(2*vij)) *  exp((1/2)*vii)* exp((1/2)*vjj) / exp(vij) * 
+      dij <- dij *((rii^vii * rjj^vjj) / rij^(2*vij)) *
         (gamma(vij) / (gamma(vii)^(1/2) * gamma(vjj)^(1/2))) * 
-        sqrt((1-ci^2)*(1-cj^2)) * 
-        (aii^(1/2) * ajj^(1/2)) / aij
-      return(eij * (exp(-vij)/gamma(vij)))
+        (2-ci^2)*(2-cj^2) 
+      return(dij / gamma(vij))
     })
   })
   pd = try(chol(eij), silent = T)
