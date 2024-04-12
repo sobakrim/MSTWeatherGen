@@ -40,28 +40,3 @@ It generates density plots for each variable, distinguishing between observed an
 and arranges them by season. This function relies on `ggplot2` for plotting and `patchwork` for
 combining plots.
 }
-\examples{
-\dontrun{
-  # Assuming 'sim', 'observed', 'dates', 'seasons', and 'coordinates' are already defined:
-  
-  # Define the seasons (example)
-  seasons <- list(
-    s1 = list(min_day = 1, max_day = 29, min_month = 12, max_month = 2),
-    s2 = list(min_day = 1, max_day = 31, min_month = 3, max_month = 5),
-    s3 = list(min_day = 1, max_day = 31, min_month = 6, max_month = 8),
-    s4 = list(min_day = 1, max_day = 30, min_month = 9, max_month = 11)
-  )
-  
-  # Define variable names to be plotted
-  names <- c("Precipitation", "Wind", "Temp_max")
-  
-  # Specify the location index (for example, 1 for the first location)
-  j <- 1
-  
-  # Run the plot function (this example assumes that the necessary data is loaded)
-  plot_result <- plot_observed_vs_simulated_density(sim, observed, dates, seasons, j, names)
-  
-  # Print or view the plot
-  print(plot_result)
-}
-}

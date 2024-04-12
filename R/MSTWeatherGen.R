@@ -38,8 +38,8 @@
 
 
 MSTWeatherGen_Estim = function(data, dates, by_season = TRUE,  seasons, scale = FALSE, precipitation = T, names = NULL, 
-                             names_weather_types = NULL, coordinates,
-                             max_it, tmax, n1, n2){
+                               names_weather_types = NULL, coordinates,
+                               max_it, tmax, n1, n2){
   # Function for estimating parameters for a Multivariate Space-Time Stochastic Weather Generator (MSTWeatherGen).
   # This can be done either on a seasonal basis or annually, based on the provided data and parameters.
   #
@@ -91,9 +91,9 @@ MSTWeatherGen_Estim = function(data, dates, by_season = TRUE,  seasons, scale = 
   # Perform the estimation for each season or for the entire year, based on 'by_season' flag
   swg <- lapply(seasons, function(season) {
     MSTWeatherGen_Estim_season(data = data, dates = dates, scale = scale, precipitation = precipitation, 
-                             names = names, names_weather_types = names_weather_types, 
-                          coordinates = coordinates, season = season, max_it = max_it, tmax = tmax, 
-                          n1 = n1, n2 = n2)
+                               names = names, names_weather_types = names_weather_types, 
+                               coordinates = coordinates, season = season, max_it = max_it, tmax = tmax, 
+                               n1 = n1, n2 = n2)
   })
   
   return(list(swg = swg, by_season = by_season, names = names, names_weather_types = names_weather_types))
@@ -198,8 +198,8 @@ MSTWeatherGen_Sim = function(dates_sim, dates_original, data, seasons = NULL, pa
 #'
 #' @keywords internal
 MSTWeatherGen_Estim_season = function(data, dates, precipitation = T, scale = FALSE, names = NULL, 
-                                    names_weather_types = NULL, coordinates,
-                                    season, max_it, tmax, n1, n2) {
+                                      names_weather_types = NULL, coordinates,
+                                      season, max_it, tmax, n1, n2) {
   # Function to perform seasonal estimation for a space-time stochastic weather generator.
   # It processes input weather data, identifies weather types for a given season,
   # estimates scaling parameters, computes transition probabilities between weather types,
@@ -257,7 +257,7 @@ MSTWeatherGen_Estim_season = function(data, dates, precipitation = T, scale = FA
   }else{
     scale_parm = NULL 
   }
-
+  
   # Step 3-1: Identify weather types for the season
   wt = weather_types(data = data, variables = names_weather_types, dates = dates,coordinates =  coordinates,
                      max_number_wt = 6, return_plots = F)

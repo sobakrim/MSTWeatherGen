@@ -20,30 +20,6 @@ utils::globalVariables(c("y", "type"))
 #'
 #' @import ggplot2
 #' @import patchwork
-#' @examples
-#' \dontrun{
-#'   # Assuming 'sim', 'observed', 'dates', 'seasons', and 'coordinates' are already defined:
-#'   
-#'   # Define the seasons (example)
-#'   seasons <- list(
-#'     s1 = list(min_day = 1, max_day = 29, min_month = 12, max_month = 2),
-#'     s2 = list(min_day = 1, max_day = 31, min_month = 3, max_month = 5),
-#'     s3 = list(min_day = 1, max_day = 31, min_month = 6, max_month = 8),
-#'     s4 = list(min_day = 1, max_day = 30, min_month = 9, max_month = 11)
-#'   )
-#'   
-#'   # Define variable names to be plotted
-#'   names <- c("Precipitation", "Wind", "Temp_max")
-#'   
-#'   # Specify the location index (for example, 1 for the first location)
-#'   j <- 1
-#'   
-#'   # Run the plot function (this example assumes that the necessary data is loaded)
-#'   plot_result <- plot_observed_vs_simulated_density(sim, observed, dates, seasons, j, names)
-#'   
-#'   # Print or view the plot
-#'   print(plot_result)
-#' }
 #' @export
 plot_observed_vs_simulated_density = function(sim, observed, dates, seasons, location, names, names_seasons=NULL) {
   
@@ -91,7 +67,7 @@ plot_observed_vs_simulated_density = function(sim, observed, dates, seasons, loc
   
 }
 
-utils::globalVariables(c("r", "y", "v", "lon", "lat"))
+utils::globalVariables(c("r", "y", "v", "lon", "lat", "n"))
 #' Plot Dry and Wet Spells Maps
 #'
 #' Generates maps showing the frequency of consecutive wet days for observed and simulated precipitation data. This function uses precipitation data to classify days as wet or dry based on a threshold and calculates the length of consecutive wet day spells. The results are then plotted on a map, with points colored by the number of spells and faceted by observation type and spell length category.
@@ -105,16 +81,10 @@ utils::globalVariables(c("r", "y", "v", "lon", "lat"))
 #'
 #' @import ggplot2
 #' @import patchwork
-#' @import dplyr
+#' @importFrom dplyr group_by tally mutate case_when summarise
 #' @import viridis
-#' @examples
-#' \dontrun{
-#'   # Assuming `sim`, `observed`, and `coordinates` are already defined and correctly formatted:
-#'   plot_dry_wet_spells_maps(sim, observed, coordinates, dates)
-#' }
 #' @export
 plot_dry_wet_spells_maps = function(sim, observed, coordinates, dates){
-
   df = lapply(1:nrow(coordinates), function(j){
     
     prec_obs = observed[,j,"Precipitation"]
@@ -187,13 +157,6 @@ utils::globalVariables(c("mu", "x"))
 #' @param dates A vector of dates corresponding to the first dimension of the `sim` and `observed` arrays. This is used to determine the months and years for grouping the data.
 #'
 #' @return A `ggplot` object containing the boxplots comparing the monthly mean values of the observed and simulated data for the specified variables and locations.
-#'
-#' @examples
-#' \dontrun{
-#'   # Assuming `sim`, `observed`, `dates`, `places`, and `names` are predefined:
-#'   plot <- plot_mean_by_month(sim, observed, places, names_places, names, dates)
-#'   print(plot)
-#' }
 #'
 #' @import ggplot2
 #' @importFrom lubridate month year
@@ -282,7 +245,7 @@ plot_multivariate_st_covariances = function(vgm, names){
         ggplot2::labs(title = paste(variable1, "vs", variable2), x = "", y = "") +
         ggplot2::theme_minimal() +
         ggplot2::theme(plot.title = ggplot2::element_text(size = 8),
-              legend.position = "none")
+                       legend.position = "none")
       last_row = length(names)
       mid_col = round(length(names)/2)
       # Add xlab to the bottom middle plot
@@ -331,17 +294,10 @@ utils::globalVariables(c("lon", "lat", "Frequency"))
 #' @param names_seasons (Optional) A vector of names corresponding to the seasons defined in the `seasons` list. If `NULL`, the names are derived from the `seasons` list itself.
 #'
 #' @return A combined `ggplot` object that includes the plots for all seasons, arranged side-by-side, each comparing the wet day frequency between observed and simulated data for the specified locations.
-#'
-#' @examples
-#' \dontrun{
-#'   # Assuming `sim`, `observed`, `dates`, `seasons`, and `coordinates` are predefined:
-#'   plot_wet_frequency(sim, observed, dates, seasons, coordinates, c("Spring", "Summer", "Fall", "Winter"))
-#' }
-#'
+#' 
 #' @import ggplot2
 #' @import viridis
 #' @import ggpubr
-#' @import dplyr
 #' @export
 
 plot_wet_frequency = function(sim, observed, dates, seasons, coordinates, names_seasons){
@@ -376,7 +332,7 @@ plot_wet_frequency = function(sim, observed, dates, seasons, coordinates, names_
       ggplot2::facet_wrap(~Type, scales = "free", ncol = 1) +
       ggplot2::theme_light() +
       ggplot2::theme(plot.title = ggplot2::element_text(size = 15, hjust = 0.5), 
-            panel.spacing = ggplot2::unit(1, "lines"), aspect.ratio = 0.9, legend.position = "top") +
+                     panel.spacing = ggplot2::unit(1, "lines"), aspect.ratio = 0.9, legend.position = "top") +
       ggplot2::xlab("Longitude (degree)") + ggplot2::ylab("Latitude (degree)") +
       ggplot2::ggtitle(names_seasons[s])
     

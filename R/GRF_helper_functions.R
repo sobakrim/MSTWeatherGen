@@ -1,3 +1,4 @@
+
 #' Generate All Combinations of Variable Index Pairs
 #'
 #' Constructs a matrix containing all possible combinations of variable names, including self-pairs and cross-pairs. This facilitates the analysis and modeling of interactions between different variables in a multivariate dataset.
@@ -240,7 +241,7 @@ optimize_pairs_spatiotemporal <- function(par_all, data, names, Vi, uh, cr, max_
       parms <- c(paste(sp[1], "ci", sep = ":"),paste(sp[2], "ci", sep = ":"),
                  paste(sp[1], "ai", sep = ":"),paste(sp[2], "ai", sep = ":"),
                  paste(pair, "ax", sep = ":"),
-                paste(pair, "rij", sep = ":"),paste(pair, "vij", sep = ":"))
+                 paste(pair, "rij", sep = ":"),paste(pair, "vij", sep = ":"))
       par_all[parms] <- optim(par_all[parms], fn = loglik_pair, data = data, pair = pair, parms = parms,
                               par_all = par_all, ep = ep, names = names, 
                               Vi = Vi, uh = uh, cr = cr,
@@ -412,7 +413,7 @@ estimation_gf <- function(data, wt_id, max_it, dates, tmax, names, par_all = NUL
 #' @keywords internal
 #' @importFrom stats kmeans
 selectUniformPointsIndices <- function(coordinates, N) {
-
+  
   colnames(coordinates) <- c("lon", "lat")
   # K-means clustering
   clusters <- stats::kmeans(coordinates, centers = N)
