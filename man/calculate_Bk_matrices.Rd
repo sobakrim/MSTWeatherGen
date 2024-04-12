@@ -4,7 +4,7 @@
 \alias{calculate_Bk_matrices}
 \title{Calculate Bk Matrices for Autoregressive (AR) Model}
 \usage{
-calculate_Bk_matrices(C_k_matrices)
+calculate_Bk_matrices(C_k_matrices, Bk_0)
 }
 \arguments{
 \item{C_k_matrices}{A list of covariance matrices, where each matrix represents the covariance at a different time lag. 

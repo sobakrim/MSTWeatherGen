@@ -34,6 +34,7 @@ data_compression = function(data) {
   
   return(pca)
 }
+utils::globalVariables(c("lon", "lat", "x"))
 #' Weather Types Identification and Visualization
 #'
 #' Function to identify and visualize different weather types (WTs) based on input data.
@@ -93,7 +94,7 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
   pca = data_compression(data)
   
   # Perform clustering to classify days into weather types
-  m = mclust::Mclust(pca, G = n_w, modelNames = "VVV", verbose = F)
+  m = mclust::Mclust(pca, G = n_w, verbose = F)
   cluster = m$classification
   K = length(unique(cluster))
   
@@ -101,10 +102,10 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
   if(return_plots){
     if(is.null(n_wt)){
       df = data.frame(bic = c(m$BIC), K = 1:max_number_wt)
-      plot_bic = ggplot(df, aes(x = K, y = bic)) + geom_line(color = "red") +
-        geom_point(color = "red") + theme_light() + xlab("Number of WTs") +
-        ylab("BIC")
-      ggsave(plot = plot_bic,paste0(dir, "plot_bic.pdf"))
+      plot_bic = ggplot2::ggplot(df, ggplot2::aes(x = K, y = bic)) + ggplot2::geom_line(color = "red") +
+        ggplot2::geom_point(color = "red") + ggplot2::theme_light() + ggplot2::xlab("Number of WTs") +
+        ggplot2::ylab("BIC")
+      ggplot2::ggsave(plot = plot_bic,paste0(dir, "plot_bic.pdf"))
       
     }
     
@@ -116,11 +117,18 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
         df = data.frame(lon = coordinates$longitude, lat = coordinates$latitude, x = colMeans(data[cluster==k,,i])-gm, kk = paste0("WT ",k))
       })
       df = do.call(rbind, df)
-      plots_variables[[i]] = ggplot(df, aes(lon, lat )) +  borders("world", colour="black",fill= "grey",xlim=range(df$lon), ylim = range(df$lat)) +coord_cartesian(xlim=range(df$lon), ylim = range(df$lat))+
-        geom_point(aes(color = x),size=3, shape=15)+scale_color_gradientn(paste("mean",names_units[i],sep = " "), colours = rev(viridis(10, option="magma")))+ theme_light() +
-        theme(legend.position="top",plot.title = element_text(size = 3, hjust = 0.5), panel.spacing = unit(1, "lines"),aspect.ratio=0.9)+ xlab("Longitude (degree)") + ylab("Latitude (degree)")+
-        ggtitle("") + theme_light() +facet_wrap(~kk)
-      ggsave(plot =plots_variables[[i]],paste0(dir,variables[i],"_wts.pdf"), width = 28, height = 18, units = "cm")
+      plots_variables[[i]] = ggplot2::ggplot(df, ggplot2::aes(lon, lat )) +  
+        ggplot2::borders("world", colour="black",fill= "grey",xlim=range(df$lon), ylim = range(df$lat)) +
+        ggplot2::coord_cartesian(xlim=range(df$lon), ylim = range(df$lat))+
+        ggplot2::geom_point(ggplot2::aes(color = x),size=3, shape=15)+
+        ggplot2::scale_color_gradientn(paste("mean",names_units[i],sep = " "), colours = rev(viridis::viridis(10, option="magma")))+ 
+        ggplot2::theme_light() +
+        ggplot2::theme(legend.position="top",plot.title = ggplot2::element_text(size = 3, hjust = 0.5), panel.spacing = ggplot2::unit(1, "lines"),aspect.ratio=0.9)+ 
+        ggplot2::xlab("Longitude (degree)") + ggplot2::ylab("Latitude (degree)")+
+        ggplot2::ggtitle("") + 
+        ggplot2::theme_light() + 
+        ggplot2::facet_wrap(~kk)
+      ggplot2::ggsave(plot =plots_variables[[i]],paste0(dir,variables[i],"_wts.pdf"), width = 28, height = 18, units = "cm")
       
     }
     
@@ -136,10 +144,17 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
       df = data.frame(lon = coordinates$longitude, lat = coordinates$latitude, x = 100*colSums(precip[cluster==i,])/length(which(cluster==i)), k = paste0("WT ", i))
     })
     df = do.call(rbind, df)
-    plot_wet_days = ggplot(df, aes(lon, lat )) +  borders("world", colour="black",fill= "grey",xlim=range(df$lon), ylim = range(df$lat)) +coord_cartesian(xlim=range(df$lon), ylim = range(df$lat))+
-      geom_point(aes(color = x),size=3, shape=15)+scale_color_gradientn("Frequency of wet days (%)", colours = rev(viridis(10, option="magma")))+ theme_light() +
-      theme(legend.position="top",plot.title = element_text(size = 3, hjust = 0.5), panel.spacing = unit(1, "lines"),aspect.ratio=0.9)+ xlab("Longitude (degree)") + ylab("Latitude (degree)")+ggtitle("")+facet_wrap(~k)
-    ggsave(plot =plot_wet_days,paste0(dir,"wet_days_wts.pdf"), width = 28, height = 18, units = "cm")
+    plot_wet_days = ggplot2::ggplot(df, ggplot2::aes(lon, lat )) +  
+      ggplot2::borders("world", colour="black",fill= "grey",xlim=range(df$lon), ylim = range(df$lat)) +
+      ggplot2::coord_cartesian(xlim=range(df$lon), ylim = range(df$lat))+
+      ggplot2::geom_point(ggplot2::aes(color = x),size=3, shape=15)+
+      ggplot2::scale_color_gradientn("Frequency of wet days (%)", colours = rev(viridis::viridis(10, option="magma")))+ 
+      ggplot2::theme_light() +
+      ggplot2::theme(legend.position="top",plot.title = ggplot2::element_text(size = 3, hjust = 0.5), panel.spacing = ggplot2::unit(1, "lines"),aspect.ratio=0.9)+ 
+      ggplot2::xlab("Longitude (degree)") + ggplot2::ylab("Latitude (degree)")+
+      ggplot2::ggtitle("")+
+      ggplot2::facet_wrap(~k)
+    ggplot2::ggsave(plot =plot_wet_days,paste0(dir,"wet_days_wts.pdf"), width = 28, height = 18, units = "cm")
     
     ## Dry days
     
@@ -153,9 +168,16 @@ weather_types = function(data, variables,dates, n_wt = NULL,coordinates,
       df = data.frame(lon = coordinates$longitude, lat = coordinates$latitude, x = 100*colSums(precip[cluster==i,])/length(which(cluster==i)), k = paste0("WT ", i))
     })
     df = do.call(rbind, df)
-    plot_dry_days = ggplot(df, aes(lon, lat )) +  borders("world", colour="black",fill= "grey",xlim=range(df$lon), ylim = range(df$lat)) +coord_cartesian(xlim=range(df$lon), ylim = range(df$lat))+
-      geom_point(aes(color = x),size=3, shape=15)+scale_color_gradientn("Frequency of dry days (%)", colours = rev(viridis(10, option="magma")))+ theme_light() +
-      theme(legend.position="top",plot.title = element_text(size = 3, hjust = 0.5), panel.spacing = unit(1, "lines"),aspect.ratio=0.9)+ xlab("Longitude (degree)") + ylab("Latitude (degree)")+ggtitle("")+facet_wrap(~k)
+    plot_dry_days = ggplot2::ggplot(df, ggplot2::aes(lon, lat )) +  
+      ggplot2::borders("world", colour="black",fill= "grey",xlim=range(df$lon), ylim = range(df$lat)) +
+      ggplot2::coord_cartesian(xlim=range(df$lon), ylim = range(df$lat))+
+      ggplot2::geom_point(aes(color = x),size=3, shape=15)+
+      ggplot2::scale_color_gradientn("Frequency of dry days (%)", colours = rev(viridis::viridis(10, option="magma")))+ 
+      ggplot2::theme_light() +
+      ggplot2::theme(legend.position="top",plot.title = ggplot2::element_text(size = 3, hjust = 0.5), panel.spacing = ggplot2::unit(1, "lines"),aspect.ratio=0.9)+ 
+      ggplot2::xlab("Longitude (degree)") + ggplot2::ylab("Latitude (degree)")+
+      ggplot2::ggtitle("")+
+      ggplot2::facet_wrap(~k)
     ggsave(plot =plot_dry_days,paste0(dir,"dry_days_wts.pdf"), width = 28, height = 18, units = "cm")
     
     return(list(cluster = cluster, plot_bic = plot_bic, plots_variables = plots_variables, 

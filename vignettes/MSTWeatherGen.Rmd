@@ -43,7 +43,7 @@ The data considered here is the meteorological dataset SAFRAN, developed by Mét
 data("data", package = "MSTWeatherGen")
 data("coordinates", package = "MSTWeatherGen")
 names = c("Precipitation", "Wind", "Temp_max")
-dates = seq(as.Date("2011-01-01"),as.Date("2021-12-31"), by="day")
+dates = seq(as.Date("2018-01-01"),as.Date("2021-12-31"), by="day")
 ```
 
 ### Note on data needed for `MSTWeatherGen`
@@ -81,7 +81,7 @@ All the data being ready, we can now proceed to the estimation of the parameters
 names_weather_types = names
 swg = MSTWeatherGen_Estim(data = data, seasons = seasons,dates = dates, names = names, by_season = T, scale = T, 
                         precipitation = T,names_weather_types = names_weather_types,
-                        coordinates= coordinates, max_it=500, tmax=2, n1=10, n2=10)
+                        coordinates= coordinates, max_it=100, tmax=1, n1=3, n2=3)
 ```
 
 Along the important arguments already defined (`data`, `seasons`, `by_season`, `dates`, `names`, `coordinates`), the user needs to define other arguments related to the estimation such as `max_it` which is the maximum iteration used by the `optim` function for the estimation of the covariance parameters, `tmax` which is the maximum time lag considered in the covariance estimation, and `n1` and `n2` which are related to the selection of the spatial pairs in the covariance estimation. Finally, the user needs to specify if the precipitation variable is considered using the `precipitation` argument. The `names_weather_types` is optional and it provides the names of the variables to be used for the weather types determination. If not provided, all the variables are used.
@@ -93,7 +93,7 @@ Now that the estimation is done, which may take some time depending on the size 
 Now, we're ready to simulate weather data based on the estimated parameters. The simulation method used by `MSTWeatherGen` is based on the vector autoregressive (AR) model whose coefficients matrices can be calculated using the covariance parameters estimated using `MSTWeatherGen_Estim` function. Therefore, before running the simulation, the user needs to define the lag of the AR model `AR_lag` and then calculate the coefficient matrices using `calculate_AR_coefficients_matrices`. Note that choosing a higher value of `AR_lag` can be computationally challenging both in term of calculation and storage. Therefore, the choice of this parameters depends of the size of the spatial domain and the number of variables considered. Here we choose an AR of order 2 and fix `AR_lag` as 2.
 
 ```{r echo=TRUE}
-AR_lag = 3
+AR_lag = 1
 bk = calculate_AR_coefficients_matrices(parm = swg, coordinates = coordinates, AR_lag = AR_lag)
 ```
 
@@ -122,24 +122,25 @@ We can compare observed and simulated maximum temperature
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width = 7, fig.align = "center"}
 library(ggplot2)
-library(tidyr)
 dates_to_plot <- seq(as.Date("2021-01-01"),as.Date("2021-12-31"), by="day")
 df <- data.frame(
   Time = dates[dates %in% dates_to_plot],
   Observed = data[dates %in% dates_to_plot,Marseille ,"Temp_max"], 
   Simulated = sim[dates %in% dates_to_plot,Marseille , "Temp_max"] 
 )
-
-df_long <- pivot_longer(df, cols = c(Observed, Simulated), names_to = "Type", values_to = "Value")
-
-ggplot(df_long, aes(x = Time, y = Value, color = Type)) +
-  geom_line() +
-  theme_minimal() +
-  labs(title = "Observed vs simulated maximum Temperature",
+df_long <- data.frame(
+  Time = rep(df$Time, 2),
+  Type = rep(c("Observed", "Simulated"), each = nrow(df)),
+  Value = c(df$Observed, df$Simulated)
+)
+ggplot2::ggplot(df_long, ggplot2::aes(x = Time, y = Value, color = Type)) +
+  ggplot2::geom_line() +
+  ggplot2::theme_minimal() +
+  ggplot2::labs(title = "Observed vs simulated maximum Temperature",
        x = "Time",
        y = "Value",
-       color = "Type") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_color_manual("",values = c("Observed" = "blue", "Simulated" = "red")) # Custom colors
+       color = "Type") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+  ggplot2::scale_color_manual("",values = c("Observed" = "blue", "Simulated" = "red")) 
 ```
 
 
