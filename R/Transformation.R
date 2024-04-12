@@ -54,7 +54,7 @@ orderNorm <- function(x,left, n_logit_fit = min(length(x), 100000), ..., warn = 
   # fit model for future extrapolation
   fit <- suppressWarnings(
     stats::glm(q_red ~ x_red , family = 'binomial', 
-        weights = rep(n_red, n_red))
+               weights = rep(n_red, n_red))
   )
   fit <- list(coef = fit$coefficients, x_red = x_red)
   val <- list(
@@ -205,7 +205,7 @@ inv_orderNorm_Transf <- function(orderNorm_obj, new_points_x_t, left, warn = FAL
   }
   # If predictions have been made outside observed domain
   if (any(is.na(vals$y))) {
-
+    
     fit <- orderNorm_obj$fit
     p <- crch::qcnorm(predict_binomial(fit), left = left)
     if(min(old_points)>0){
@@ -302,7 +302,7 @@ orderNormTransf <- function(orderNorm_obj, new_points, warn, left) {
 #' @importFrom lubridate year
 #' @keywords internal
 scale_data <- function(data, names, dates, window_size = 30) {
-
+  
   if(length(unique(lubridate::year(dates))) > 5){
     # Initialize scale parameters storage
     scale_parm <- list(mu = list(), sd = list())

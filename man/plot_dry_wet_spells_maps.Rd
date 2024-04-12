@@ -21,9 +21,3 @@ A `ggplot` object representing the maps of dry and wet spells for observed and s
 \description{
 Generates maps showing the frequency of consecutive wet days for observed and simulated precipitation data. This function uses precipitation data to classify days as wet or dry based on a threshold and calculates the length of consecutive wet day spells. The results are then plotted on a map, with points colored by the number of spells and faceted by observation type and spell length category.
 }
-\examples{
-\dontrun{
-  # Assuming `sim`, `observed`, and `coordinates` are already defined and correctly formatted:
-  plot_dry_wet_spells_maps(sim, observed, coordinates, dates)
-}
-}

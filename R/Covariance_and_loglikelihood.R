@@ -9,7 +9,6 @@
 #' @return Numeric vector representing the covariance values calculated using the Matern function for the distances in `h`.
 #'
 #' @keywords internal
-#' @noRd
 Matern <- function(h, r, v) {
   # Calculates the Matern covariance function for a given vector of distances.
   
@@ -37,7 +36,6 @@ Matern <- function(h, r, v) {
 #' @return Numeric vector of covariance values calculated using Gneiting's model.
 #'
 #' @keywords internal
-#' @noRd
 
 Gneiting <- function(h, u, par, dij) {
   # Multivariate space-time Gneiting's covariance function
@@ -113,7 +111,6 @@ Gneiting <- function(h, u, par, dij) {
 #' and their associated spatio-temporal covariance parameters.
 #'
 #' @keywords internal
-#' @noRd
 
 param <- function(par, names) {
   # Function to construct a data frame with covariance parameters 
@@ -185,7 +182,6 @@ param <- function(par, names) {
 #'
 #' @importFrom Matrix nearPD
 #' @keywords internal
-#' @noRd
 
 compute_beta <- function(parm, names, cr) {
   # Function for calculating correlations (dij) based on the Gneiting function
@@ -252,7 +248,7 @@ compute_beta <- function(parm, names, cr) {
 #' @return A square matrix where each element [i, j] represents the correction term ('ax') between the ith and jth variables, facilitating the adjustment of correlations or covariances between them.
 #'
 #' @keywords internal
-#' @noRd
+
 
 compute_ax <- function(parm, names) {
   # Extract a matrix of correction terms ('ax') for a set of variables based on parameters 
@@ -283,7 +279,7 @@ compute_ax <- function(parm, names) {
 #' @return A square matrix where each element [i, j] contains the beta coefficient ('dij') between the ith and jth variables. This matrix is crucial for modeling the interactions and dependencies between different variables in the model.
 #'
 #' @keywords internal
-#' @noRd
+
 extract_beta <- function(parm, names) {
   
   ax = sapply(names, function(v1){
@@ -314,7 +310,7 @@ extract_beta <- function(parm, names) {
 #'
 #' @importFrom VGAM pbinorm
 #' @keywords internal
-#' @noRd
+
 loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep, cr) {
   # Function to compute the log-likelihood for a pair of variables using the Gneiting spatio-temporal 
   # covariance model.
@@ -410,7 +406,7 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
       
       # Case 4: Both variables are zero, and both are Precipitation
       if (!length(which(id3 == TRUE)) == 0) {
-        l3 = try(sum(log(VGAM::pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3]))), silent = TRUE)
+        l3 = try(sum(log(pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3]))), silent = TRUE)
         if (is.character(l3)) l3 = -abs(rnorm(1)) * 1e+20  # Handle errors in computing bivariate normal CDF
       }
       
@@ -445,7 +441,7 @@ loglik_pair <- function(par, parms, pair, par_all, data, names, Vi, h, u, uh, ep
 #' @importFrom VGAM pbinorm
 #' @importFrom parallel mclapply
 #' @keywords internal
-#' @noRd
+
 
 
 loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
@@ -530,7 +526,7 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
         
         # l3: Case where both variables are zero and both are "Precipitation"
         if (!length(which(id3 == TRUE)) == 0) {
-          l3 = sum(log(VGAM::pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3])))
+          l3 = sum(log(pbinorm(uh[id3, 7], uh[id3, 8], var1 = 1, var2 = 1, cov12 = cij[id3])))
         }
         
         # l4: Case where both variables have non-zero values
@@ -563,7 +559,7 @@ loglik <- function(par, parms, par_all, data, names, Vi, h, u, uh, ep, cr) {
 #'
 #' @importFrom VGAM pbinorm
 #' @keywords internal
-#' @noRd
+
 loglik_spatial <- function(par, data, h, uh, v) {
   # Function to calculate the log-likelihood for spatial data using the Matérn covariance function.
   # This is crucial for estimating geostatistical parameters in spatial models.
@@ -611,7 +607,7 @@ loglik_spatial <- function(par, data, h, uh, v) {
     }else if(!length(which(id1==T))==0){
       l1 = sum(log(pnorm((-cij[id1]*v2[id1])/sqrt(delta[id1]))))
     }else if(!length(which(id3==T))==0){
-      l3 = sum(VGAM::pbinorm(uh[id3, 7], uh[id3, 8],var1 = 1, var2 = 1, cov12 = cij[id3]))
+      l3 = sum(pbinorm(uh[id3, 7], uh[id3, 8],var1 = 1, var2 = 1, cov12 = cij[id3]))
     }
     
     # Return the aggregated negative log-likelihood, adjusting for errors or infinite values.
@@ -636,7 +632,7 @@ loglik_spatial <- function(par, data, h, uh, v) {
 #' @return Data frame containing computed covariances for specified spatial distances and time lags, facilitating the analysis of spatial and temporal patterns in the data.
 #'
 #' @keywords internal
-#' @noRd
+
 
 spacetime_cov <- function(data, wt_id, locations, ds = NULL, dates, lagstime, dist, covgm = TRUE) {
   # Computes spatial and temporal covariances for spatio-temporal data.
@@ -788,7 +784,7 @@ cov_matrices = function(par, coordinates, names, M) {
 #' @return Logical value indicating whether the covariance matrix, constructed based on the parameters and variable names, is positive definite.
 #'
 #' @keywords internal
-#' @noRd
+
 
 pd_condition = function(parm, names){
   eij = sapply(names, function(v1){
@@ -825,7 +821,7 @@ pd_condition = function(parm, names){
 #' @return The modified set of model parameters with updated 'dij' values based on the beta coefficients.
 #'
 #' @keywords internal
-#' @noRd
+
 
 modify_beta_parm = function(parm, beta){
   for (i in 1:nrow(parm)) {

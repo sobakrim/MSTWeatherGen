@@ -88,7 +88,7 @@ calculate_AR_coefficients_matrices <- function(parm, coordinates, AR_lag){
     K = length(parm$swg[[s]]$gf_par)
     bk = lapply(1:K, function(k){
       cova = cov_matrices(par = parm$swg[[s]]$gf_par[[k]], coordinates = coordinates, 
-                         names = names, M = AR_lag)
+                          names = names, M = AR_lag)
       bk = try(calculate_Bk_matrices(cova), silent = T)
       return(list(bk = bk, cov0 = cova[[1]]))
     })

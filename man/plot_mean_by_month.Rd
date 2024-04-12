@@ -25,11 +25,3 @@ A `ggplot` object containing the boxplots comparing the monthly mean values of t
 \description{
 Compares the monthly mean values of observed and simulated weather data for specified variables and locations. The function generates boxplots to visually compare the means for each month, facilitating an easy comparison between observed and simulated data across different variables and locations.
 }
-\examples{
-\dontrun{
-  # Assuming `sim`, `observed`, `dates`, `places`, and `names` are predefined:
-  plot <- plot_mean_by_month(sim, observed, places, names_places, names, dates)
-  print(plot)
-}
-
-}
