@@ -25,10 +25,3 @@ A combined `ggplot` object that includes the plots for all seasons, arranged sid
 \description{
 Generates plots comparing the frequency of wet days between observed and simulated precipitation data across specified seasons and geographic locations. Each season is visualized in a separate plot, with observed and simulated data presented side-by-side for direct comparison. The function uses a threshold to classify days as wet or dry and calculates the percentage of wet days for each location.
 }
-\examples{
-\dontrun{
-  # Assuming `sim`, `observed`, `dates`, `seasons`, and `coordinates` are predefined:
-  plot_wet_frequency(sim, observed, dates, seasons, coordinates, c("Spring", "Summer", "Fall", "Winter"))
-}
-
-}

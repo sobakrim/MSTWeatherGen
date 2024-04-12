@@ -344,4 +344,4 @@ simulate_weathertypes = function(first_state, dates_sim, dates, tm, K) {
   # Return the vector of simulated states
   return(states)
 }
- 
+

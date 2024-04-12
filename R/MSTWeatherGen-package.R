@@ -49,15 +49,15 @@
 #' }
 
 #' @import stats
-#' @import Matrix
+#' @importFrom Matrix nearPD
 #' @import lubridate
 #' @import ggplot2
-#' @import FNN
+#' @importFrom dplyr group_by tally mutate case_when summarise
+#' @importFrom VGAM pbinorm
 #' @import crch
 #' @import abind
 #' @import viridis
 #' @import stringr
-#' @import VGAM
 #' @import PTAk
 #' @import mclust
 #' @importFrom utils packageVersion
