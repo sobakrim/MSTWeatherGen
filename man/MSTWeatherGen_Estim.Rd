@@ -60,14 +60,9 @@ or annually, depending on the provided data and specified parameters. It handles
 with special consideration for precipitation if indicated.
 }
 \details{
-The model considers a \(p\)-dimensional stochastic process \(Y(s,t) = [Y_i(s,t)]_{i=1}^{p}\), defined in \(R^2 x R\), 
-representing \(p\) meteorological variables at space-time coordinates \((s,t)\). 
-Additionally, a \(1\)-dimensional stochastic process \(X(t)\) characterizes the weather state at time \(t\), 
-taking values in a discrete state space \(S = \{1,...,K\}\). We assume the existence of \(K\) independent 
-\(p\)-dimensional latent Gaussian random fields \(Z_k(s,t)=[Z_{k,i}(s,t)]_{i=1}^{p}\), with \(k=1,...,K\), 
-such that when \(X(t)\) is in state \(k\), the stochastic vector \(Y(s,t)\) is related to \(Z_k(s,t)\) 
-through a non-linear transformation function \(Psi_{k,i,s}\).
-
-Each component of the random field \(Z_k(s,t)\) is assumed to have zero mean, and the field is 
-considered second-order stationary, with its covariance function depending only on the space-time lag \((h,u)\).
+The MSTWeatherGen model operates in three stages: Initially, weather types are determined through
+a clustering algorithm. Subsequently, for each identified weather type, the weather data undergo transformations 
+into residuals that adhere to a normal distribution via a specific transformation function. In the final stage, 
+a multivariate space-time Gaussian random field is fitted to these transformed variables for each weather type.
+The user has the option to configure the model to fit data for each season, with the seasons defined by the user.
 }
