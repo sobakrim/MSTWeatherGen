@@ -7,32 +7,35 @@
 
 ## Overview
 
-{MSTWeatherGen} Multivariate Space-Time Weather Generator package is designed for the simulation of multivariate spatio-temporal meteorological variables. It provides tools for estimating the model parameters and generating synthetic weather data that can be used for a variety of applications, including climate research, agricultural or hydrological modeling.  
+{MSTWeatherGen} Multivariate and Space-Time Weather Generator package is designed for the simulation of multivariate spatio-temporal meteorological variables. It provides tools for estimating the model parameters and generating synthetic weather data that can be used for a variety of applications, including climate research, agricultural or hydrological modeling.  
 
 
 ## Installation
 
+You can install `{MSTWeatherGen}` from GitHub as follows:
 ```r
-# Install from CRAN
-install.packages("MSTWeatherGEN")
-
-# Or the development version from GitHub:
 # install.packages("pak")
 pak::pak("sobakrim/MSTWeatherGen")
 ```
 
-## First use | Demonstration
+## Getting Started
 
+To learn how to use the `{MSTWeatherGen}` package, please refer to the detailed vignette available [here](https://sobakrim.github.io/MSTWeatherGen/articles/MSTWeatherGen.html).
 
-## Funding / Referencies
-
-
+## Funding
+This work was supported by funding from the French National Research Agency (ANR) as part of the BEYOND project (Contract No. 20-PCPA-0002). We acknowledge their support for enabling the development of this package.
 ## License
 
-The package MSTWeather is under GNU GPL V3.   
+The package MSTWeatherGen is under GNU GPL V3.   
 See [LICENSE](LICENSE) file.  
 
 ## Authors
 
-Said Obakrim  
-Jean-François Rey  
+- Said Obakrim  (Author and Maintainer))
+- Jean-François Rey (Author)
+
+## Contributors
+
+- Lionel Benoit 
+- Denis Allard
+

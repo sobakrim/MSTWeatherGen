@@ -6,7 +6,7 @@ complex spatio-temporal dependencies."><!-- mathjax --><script src="https://cdnj
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,20 +34,20 @@ complex spatio-temporal dependencies."><!-- mathjax --><script src="https://cdnj
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/sobakrim/MSTWeatherGen">
     <span class="fa fa-brands fa-github"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Optimize Spatio-Temporal Parameters for Variable Pairs</h1>
-    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/HEAD/R/GRF_helper_functions.R"><code>R/GRF_helper_functions.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/main/R/GRF_helper_functions.R"><code>R/GRF_helper_functions.R</code></a></small>
     <div class="hidden name"><code>optimize_pairs_spatiotemporal.Rd</code></div>
     </div>
 
@@ -64,50 +64,50 @@ complex spatio-temporal dependencies.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>par_all</dt>
+
+
+<dl><dt id="arg-par-all">par_all<a class="anchor" aria-label="anchor" href="#arg-par-all"></a></dt>
 <dd><p>Initial comprehensive set of model parameters to be refined through optimization.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>Dataset containing spatio-temporal observations, typically a 3D array or list
 with dimensions representing locations, times, and variables.</p></dd>
 
 
-<dt>names</dt>
+<dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
 <dd><p>Vector containing the names of the variables considered in the model,
 indicating the scope of the optimization.</p></dd>
 
 
-<dt>Vi</dt>
+<dt id="arg-vi">Vi<a class="anchor" aria-label="anchor" href="#arg-vi"></a></dt>
 <dd><p>Matrix specifying variable pairs, directing the optimization towards relevant
 variable interactions.</p></dd>
 
 
-<dt>uh</dt>
+<dt id="arg-uh">uh<a class="anchor" aria-label="anchor" href="#arg-uh"></a></dt>
 <dd><p>Matrix that combines spatial and temporal distances with additional identifiers,
 essential for defining the context of each data point in spatio-temporal space.</p></dd>
 
 
-<dt>cr</dt>
+<dt id="arg-cr">cr<a class="anchor" aria-label="anchor" href="#arg-cr"></a></dt>
 <dd><p>Initial correlation matrix offering a preliminary estimate of relationships
 between variables, serving as a foundation for optimization.</p></dd>
 
 
-<dt>max_it</dt>
+<dt id="arg-max-it">max_it<a class="anchor" aria-label="anchor" href="#arg-max-it"></a></dt>
 <dd><p>Specifies the maximum number of iterations for the optimization process,
 setting a limit to ensure computational feasibility.</p></dd>
 
 
-<dt>ep</dt>
+<dt id="arg-ep">ep<a class="anchor" aria-label="anchor" href="#arg-ep"></a></dt>
 <dd><p>Data frame defining pairs of variables for detailed analysis, guiding the optimization
 process by highlighting specific interactions of interest.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>Updated `par_all` vector containing optimized parameters for each variable pair,
+    <p>Updated `par_all` vector containing optimized parameters for each variable pair,
         representing an enhanced set of model parameters post-optimization.
         This updated parameter set is ready for subsequent model application or further analysis.</p>
     </div>
@@ -124,15 +124,15 @@ process by highlighting specific interactions of interest.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

@@ -6,7 +6,7 @@ combining plots."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,20 +34,20 @@ combining plots."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/sobakrim/MSTWeatherGen">
     <span class="fa fa-brands fa-github"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plot Observed vs. Simulated Density</h1>
-    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/HEAD/R/Validation_plots.R"><code>R/Validation_plots.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/main/R/Validation_plots.R"><code>R/Validation_plots.R</code></a></small>
     <div class="hidden name"><code>plot_observed_vs_simulated_density.Rd</code></div>
     </div>
 
@@ -72,40 +72,40 @@ combining plots.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>sim</dt>
+
+
+<dl><dt id="arg-sim">sim<a class="anchor" aria-label="anchor" href="#arg-sim"></a></dt>
 <dd><p>A 3-dimensional array of simulated weather data with dimensions [time, location, variable].</p></dd>
 
 
-<dt>observed</dt>
+<dt id="arg-observed">observed<a class="anchor" aria-label="anchor" href="#arg-observed"></a></dt>
 <dd><p>A 3-dimensional array of observed weather data with dimensions [time, location, variable].</p></dd>
 
 
-<dt>dates</dt>
+<dt id="arg-dates">dates<a class="anchor" aria-label="anchor" href="#arg-dates"></a></dt>
 <dd><p>A vector of dates corresponding to the first dimension of `sim` and `observed`.</p></dd>
 
 
-<dt>seasons</dt>
+<dt id="arg-seasons">seasons<a class="anchor" aria-label="anchor" href="#arg-seasons"></a></dt>
 <dd><p>A list where each element defines the start and end days and months of a season.</p></dd>
 
 
-<dt>location</dt>
+<dt id="arg-location">location<a class="anchor" aria-label="anchor" href="#arg-location"></a></dt>
 <dd><p>The index of the location for which to plot the data.</p></dd>
 
 
-<dt>names</dt>
+<dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
 <dd><p>A vector of strings indicating the names of the variables to be plotted.</p></dd>
 
 
-<dt>names_seasons</dt>
+<dt id="arg-names-seasons">names_seasons<a class="anchor" aria-label="anchor" href="#arg-names-seasons"></a></dt>
 <dd><p>(Optional) A vector of season names corresponding to the `seasons` list.
 If `NULL`, the names are derived from the `seasons` list itself.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A `ggplot` object representing the combined density plots for observed and simulated data
+    <p>A `ggplot` object representing the combined density plots for observed and simulated data
 across the specified seasons and variables.</p>
     </div>
 
@@ -121,15 +121,15 @@ across the specified seasons and variables.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

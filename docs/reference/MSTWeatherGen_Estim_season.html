@@ -5,7 +5,7 @@ of parameters for the Gaussian field model."><!-- mathjax --><script src="https:
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -33,20 +33,20 @@ of parameters for the Gaussian field model."><!-- mathjax --><script src="https:
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/sobakrim/MSTWeatherGen">
     <span class="fa fa-brands fa-github"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Seasonal Estimation for MSTWeatherGen</h1>
-    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/HEAD/R/MSTWeatherGen.R"><code>R/MSTWeatherGen.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/main/R/MSTWeatherGen.R"><code>R/MSTWeatherGen.R</code></a></small>
     <div class="hidden name"><code>MSTWeatherGen_Estim_season.Rd</code></div>
     </div>
 
@@ -75,56 +75,56 @@ of parameters for the Gaussian field model.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>data</dt>
+
+
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>Array of weather data with dimensions [time, location, variable].</p></dd>
 
 
-<dt>dates</dt>
+<dt id="arg-dates">dates<a class="anchor" aria-label="anchor" href="#arg-dates"></a></dt>
 <dd><p>Vector of dates corresponding to the time dimension of the data.</p></dd>
 
 
-<dt>precipitation</dt>
+<dt id="arg-precipitation">precipitation<a class="anchor" aria-label="anchor" href="#arg-precipitation"></a></dt>
 <dd><p>Logical indicating if precipitation is to be considered as a primary variable.</p></dd>
 
 
-<dt>scale</dt>
+<dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
 <dd><p>Logical, indicating if the data needs to be standardized (`TRUE`) or not (`FALSE`). If `scale` is `TRUE` each meteorological variable
 is standardized at each location using smoothed mean and standard deviation.</p></dd>
 
 
-<dt>names</dt>
+<dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
 <dd><p>Names of the variables in the data array to be used for analysis.</p></dd>
 
 
-<dt>names_weather_types</dt>
+<dt id="arg-names-weather-types">names_weather_types<a class="anchor" aria-label="anchor" href="#arg-names-weather-types"></a></dt>
 <dd><p>Subset of 'names', variables to be used for weather type classification.</p></dd>
 
 
-<dt>coordinates</dt>
+<dt id="arg-coordinates">coordinates<a class="anchor" aria-label="anchor" href="#arg-coordinates"></a></dt>
 <dd><p>Matrix with columns for the coordinates of each location.</p></dd>
 
 
-<dt>season</dt>
+<dt id="arg-season">season<a class="anchor" aria-label="anchor" href="#arg-season"></a></dt>
 <dd><p>Vector of integers representing months to define the season for analysis.</p></dd>
 
 
-<dt>max_it</dt>
+<dt id="arg-max-it">max_it<a class="anchor" aria-label="anchor" href="#arg-max-it"></a></dt>
 <dd><p>Maximum number of iterations for optimization procedures.</p></dd>
 
 
-<dt>tmax</dt>
+<dt id="arg-tmax">tmax<a class="anchor" aria-label="anchor" href="#arg-tmax"></a></dt>
 <dd><p>Maximum time lag for temporal analysis.</p></dd>
 
 
-<dt>n1, </dt>
+<dt id="arg-n-">n1, <a class="anchor" aria-label="anchor" href="#arg-n-"></a></dt>
 <dd><p>n2 Parameters defining spatial window size for analysis.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list containing dates, scale parameters, weather types, transition probabilities, lambda transformations,
+    <p>A list containing dates, scale parameters, weather types, transition probabilities, lambda transformations,
 and parameters for the Gaussian field model for the specified season.</p>
     </div>
 
@@ -140,15 +140,15 @@ and parameters for the Gaussian field model for the specified season.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

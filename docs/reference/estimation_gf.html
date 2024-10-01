@@ -5,7 +5,7 @@ steps to derive the optimal model parameters that best fit the observed data."><
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -33,20 +33,20 @@ steps to derive the optimal model parameters that best fit the observed data."><
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/sobakrim/MSTWeatherGen">
     <span class="fa fa-brands fa-github"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Estimate Geostatistical Parameters for Multivariate Spatio-Temporal Data</h1>
-    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/HEAD/R/GRF_helper_functions.R"><code>R/GRF_helper_functions.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/main/R/GRF_helper_functions.R"><code>R/GRF_helper_functions.R</code></a></small>
     <div class="hidden name"><code>estimation_gf.Rd</code></div>
     </div>
 
@@ -76,59 +76,59 @@ steps to derive the optimal model parameters that best fit the observed data.</p
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>data</dt>
+
+
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A 3D array containing the observed data values across time, space, and variables.</p></dd>
 
 
-<dt>wt_id</dt>
+<dt id="arg-wt-id">wt_id<a class="anchor" aria-label="anchor" href="#arg-wt-id"></a></dt>
 <dd><p>Vector of identifiers indicating specific weather types or variable categorizations within the dataset.</p></dd>
 
 
-<dt>max_it</dt>
+<dt id="arg-max-it">max_it<a class="anchor" aria-label="anchor" href="#arg-max-it"></a></dt>
 <dd><p>Maximum number of iterations allowed during the optimization process.</p></dd>
 
 
-<dt>dates</dt>
+<dt id="arg-dates">dates<a class="anchor" aria-label="anchor" href="#arg-dates"></a></dt>
 <dd><p>Vector of dates corresponding to the temporal observations within the dataset.</p></dd>
 
 
-<dt>tmax</dt>
+<dt id="arg-tmax">tmax<a class="anchor" aria-label="anchor" href="#arg-tmax"></a></dt>
 <dd><p>The maximum temporal lag considered for the model, influencing temporal dependency estimation.</p></dd>
 
 
-<dt>names</dt>
+<dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
 <dd><p>Vector containing the names of the variables included in the analysis.</p></dd>
 
 
-<dt>par_all</dt>
+<dt id="arg-par-all">par_all<a class="anchor" aria-label="anchor" href="#arg-par-all"></a></dt>
 <dd><p>(Optional) Initial or current complete set of model parameters. If not provided, parameters are initialized within the function.</p></dd>
 
 
-<dt>coordinates</dt>
+<dt id="arg-coordinates">coordinates<a class="anchor" aria-label="anchor" href="#arg-coordinates"></a></dt>
 <dd><p>Matrix containing the geographical coordinates of the spatial locations in the dataset.</p></dd>
 
 
-<dt>n1, </dt>
+<dt id="arg-n-">n1, <a class="anchor" aria-label="anchor" href="#arg-n-"></a></dt>
 <dd><p>n2 Parameters that define the granularity for generating spatial index pairs, affecting the spatial resolution of the model.</p></dd>
 
 
-<dt>ax</dt>
+<dt id="arg-ax">ax<a class="anchor" aria-label="anchor" href="#arg-ax"></a></dt>
 <dd><p>Matrix of precomputed correction terms used to adjust the covariance matrix, aiding in model stabilization.</p></dd>
 
 
-<dt>cr</dt>
+<dt id="arg-cr">cr<a class="anchor" aria-label="anchor" href="#arg-cr"></a></dt>
 <dd><p>Initial correlation matrix representing the base relationships between variables, used as a starting point for optimization.</p></dd>
 
 
-<dt>threshold_precip</dt>
+<dt id="arg-threshold-precip">threshold_precip<a class="anchor" aria-label="anchor" href="#arg-threshold-precip"></a></dt>
 <dd><p>Threshold values for precipitation, used in preprocessing to distinguish between different precipitation intensities.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list containing two elements: `parm`, the parameter matrix formatted for interpretation and use in subsequent model applications, and
+    <p>A list containing two elements: `parm`, the parameter matrix formatted for interpretation and use in subsequent model applications, and
 `par_all`, the complete vector of optimized model parameters.</p>
     </div>
 
@@ -144,15 +144,15 @@ steps to derive the optimal model parameters that best fit the observed data.</p
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

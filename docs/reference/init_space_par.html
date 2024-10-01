@@ -5,7 +5,7 @@ that best fit the spatial structure of the data for each variable."><!-- mathjax
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -33,20 +33,20 @@ that best fit the spatial structure of the data for each variable."><!-- mathjax
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/sobakrim/MSTWeatherGen">
     <span class="fa fa-brands fa-github"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Initialize Spatial Parameters for Variables</h1>
-    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/HEAD/R/GRF_helper_functions.R"><code>R/GRF_helper_functions.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/sobakrim/MSTWeatherGen/blob/main/R/GRF_helper_functions.R"><code>R/GRF_helper_functions.R</code></a></small>
     <div class="hidden name"><code>init_space_par.Rd</code></div>
     </div>
 
@@ -62,35 +62,35 @@ that best fit the spatial structure of the data for each variable.</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>data</dt>
+
+
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>The dataset for which spatial parameters are being initialized, typically
 a 3D array or a list of spatial observations for multiple variables.</p></dd>
 
 
-<dt>names</dt>
+<dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
 <dd><p>A vector of variable names for which spatial parameters are to be initialized.</p></dd>
 
 
-<dt>h</dt>
+<dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
 <dd><p>Vector of spatial distances used in the likelihood function, representing
 the spatial relationship between observation points.</p></dd>
 
 
-<dt>uh</dt>
-<dd><p>Matrix containing additional data required by the likelihood function, 
+<dt id="arg-uh">uh<a class="anchor" aria-label="anchor" href="#arg-uh"></a></dt>
+<dd><p>Matrix containing additional data required by the likelihood function,
 typically combining spatial and temporal distances with other relevant information.</p></dd>
 
 
-<dt>max_it</dt>
+<dt id="arg-max-it">max_it<a class="anchor" aria-label="anchor" href="#arg-max-it"></a></dt>
 <dd><p>Maximum number of iterations for the optimization process, defaulting to 2000.
 This parameter controls the depth of the optimization search.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list containing optimized spatial parameters for each variable specified in 'names'.
+    <p>A list containing optimized spatial parameters for each variable specified in 'names'.
         Each element of the list corresponds to a set of parameters (e.g., range and smoothness)
         optimized for the spatial structure of the corresponding variable.</p>
     </div>
@@ -107,15 +107,15 @@ This parameter controls the depth of the optimization search.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
