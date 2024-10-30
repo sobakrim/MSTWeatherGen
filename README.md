@@ -14,8 +14,8 @@
 
 You can install `{MSTWeatherGen}` from GitHub as follows:
 ```r
-# install.packages("pak")
-pak::pak("sobakrim/MSTWeatherGen")
+# install.packages("remotes")
+remotes::install_github("sobakrim/MSTWeatherGen")
 ```
 
 ## Getting Started
