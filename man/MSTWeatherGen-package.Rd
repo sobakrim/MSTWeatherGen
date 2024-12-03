@@ -37,7 +37,7 @@ url: https://cran.r-project.org/package=MSTWeatherGen.
 Useful links:
 \itemize{
   \item \url{https://github.com/sobakrim/MSTWeatherGen}
-  \item \url{http://sobakrim.github.io/MSTWeatherGen}
+  \item \url{https://sobakrim.github.io/MSTWeatherGen}
   \item Report bugs at \url{https://github.com/sobakrim/MSTWeatherGen/issues}
 }
 
