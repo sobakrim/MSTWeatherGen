@@ -9,6 +9,15 @@
 
 {MSTWeatherGen} Multivariate and Space-Time stochastic Weather Generator R package is designed for the simulation of multivariate spatio-temporal meteorological variables. It provides tools for estimating the model parameters and generating synthetic weather data that can be used for a variety of applications, including climate research, agricultural or hydrological modeling.  
 
+For more details on the paper, see the publication: 
+<blockquote>
+  <p>
+    Obakrim, S. <em>et&nbsp;al.</em> “A multivariate and space-time stochastic weather generator using a latent Gaussian framework,”
+    <em> Stochastic Environmental Research and Risk Assessment</em>, 2025.
+    <a href="https://doi.org/10.1007/s00477-024-02897-8">doi:10.1007/s00477-024-02897-8</a>
+  </p>
+</blockquote>
+
 
 ## Installation
 
