@@ -58,7 +58,7 @@ With the data loaded, we proceed to estimate the parameters required for simulat
 
 Before heading to the estimation, we will detail some important considerations that will help the user use the `MSTWeatherGen_Estim` function. First, if the data exhibit seasonality, it has to be handled somehow. Here, propose to treat each season separately meaning that the parameters of the model (weather types, transformation functions, and covariance function) are estimated at each season. The seasons are up to the user to define using the following format:
 
-```{r echo=TRUE}
+```{r, echo=TRUE}
 seasons <- list(
   s1 = list(min_day = 1, max_day = 29, min_month = 12, max_month = 2),
   s2 = list(min_day = 1, max_day = 31, min_month = 3, max_month = 5),
@@ -69,7 +69,7 @@ seasons <- list(
 
 We can also provide the names of each season, to be used later for the validation plots:
 
-```{r echo=TRUE}
+```{r, echo=TRUE}
 names_seasons = c("DJF", "MAM", "JJA", "SON")
 ```
 
@@ -77,7 +77,7 @@ If the considered data does not exhibit seasonality one can use the whole period
 
 All the data being ready, we can now proceed to the estimation of the parameters using `MSTWeatherGen_Estim` function.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
 names_weather_types = names
 swg = MSTWeatherGen_Estim(data = data, seasons = seasons,dates = dates, names = names, by_season = T, scale = T, 
                         precipitation = T,names_weather_types = names_weather_types,
