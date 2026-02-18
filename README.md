@@ -2,7 +2,6 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/sobakrim/MSTWeatherGen/actions/workflows/r-package-check.yml/badge.svg)](https://github.com/sobakrim/MSTWeatherGen/actions/workflows/r-package-check.yml) 
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/MSTWeatherGen)](https://cran.r-project.org/package=MSTWeatherGen)
 <!-- badges: end -->
 
 ## Overview
